@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "mysql" // Hoặc "postgresql", "sqlite" tùy database bạn dùng
+  url      = env("DATABASE_URL") // URL kết nối database từ biến môi trường
+}
+
+// Generator cho Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Generator cho Prisma Client
+
+// Model Brands (Hãng điện thoại)
+model Brands {
+  brand_id   Int        @id @default(autoincrement())
+  brand_name String
+  products   Products[]
+}
+
+// Model Categories (Danh mục)
+model Categories {
+  category_id   Int        @id @default(autoincrement())
+  category_name String
+  description   String?
+  products      Products[]
+}
+
+// Model Products (Sản phẩm)
+model Products {
+  product_id   Int               @id @default(autoincrement())
+  category_id  Int
+  brand_id     Int
+  product_name String // VD: iPhone 14, Galaxy S23
+  description  String? // Mô tả sản phẩm
+  specs        Json? // Thông số kỹ thuật (JSON hoặc text)
+  category     Categories        @relation(fields: [category_id], references: [category_id])
+  brand        Brands            @relation(fields: [brand_id], references: [brand_id])
+  variants     ProductVariants[]
+  comments     Comments[] // Quan hệ 1-N với Comments
+  ratings      Ratings[] // Quan hệ 1-N với Ratings
+  images       ProductImages[] // Quan hệ 1-N với ProductImages
+}
+
+// Model Colors (Màu sắc)
+model Colors {
+  color_id   Int               @id @default(autoincrement())
+  color_name String // VD: Đen, Trắng
+  hex        String // Mã màu hexadecimal
+  variants   ProductVariants[]
+  images     ProductImages[] // Quan hệ 1-N với ProductImages
+}
+
+// Model Storages (Dung lượng)
+model Storages {
+  storage_id       Int               @id @default(autoincrement())
+  storage_capacity String // VD: 128GB, 256GB
+  variants         ProductVariants[]
+}
+
+// Model ProductVariants (Biến thể sản phẩm)
+model ProductVariants {
+  variant_id        Int            @id @default(autoincrement())
+  product_id        Int
+  color_id          Int
+  storage_id        Int
+  original_price    Int // Giá gốc
+  sale_price        Int // Giá bán
+  promotional_price Int? // Giá khuyến mãi
+  promotion_start   DateTime?
+  promotion_end     DateTime?
+  stock             Int // Số lượng tồn kho
+  product           Products       @relation(fields: [product_id], references: [product_id])
+  color             Colors         @relation(fields: [color_id], references: [color_id])
+  storage           Storages       @relation(fields: [storage_id], references: [storage_id])
+  orderDetails      OrderDetails[]
+}
+
+// Model ProductImages (Hình ảnh sản phẩm)
+model ProductImages {
+  image_id   Int      @id @default(autoincrement())
+  product_id Int
+  color_id   Int?
+  image_url  String
+  created_at DateTime @default(now())
+  product    Products @relation(fields: [product_id], references: [product_id])
+  color      Colors?  @relation(fields: [color_id], references: [color_id])
+}
+
+// Add new Admin model
+model Admin {
+  admin_id  Int    @id @default(autoincrement())
+  username  String @unique
+  password  String
+  full_name String
+  email     String @unique
+  role      String @default("admin")
+}
+
+// Model Customers (Khách hàng)
+
+model Customers {
+  customer_id Int        @id @default(autoincrement())
+  full_name   String
+  email       String     @unique
+  phone       String?
+  address     String?
+  orders      Orders[]
+  comments    Comments[] // Quan hệ 1-N với Comments
+  ratings     Ratings[] // Quan hệ 1-N với Ratings
+  role        String     @default("customer")
+  password    String
+}
+
+// Model Vouchers (Voucher)
+model Vouchers {
+  voucher_id      Int       @id @default(autoincrement())
+  code            String    @unique // VD: SALE20
+  discount_value  Int
+  discount_type   String // "fixed" hoặc "percent"
+  min_order_value Int?
+  max_uses        Int?
+  used_count      Int       @default(0)
+  start_date      DateTime?
+  expiry_date     DateTime?
+  orders          Orders[]
+}
+
+// Model Orders (Đơn hàng)
+model Orders {
+  order_id     Int            @id @default(autoincrement())
+  customer_id  Int
+  voucher_id   Int?
+  order_date   DateTime
+  total_amount Int // Tổng tiền sau khuyến mãi/voucher
+  status       String // VD: Chờ xử lý, Đã giao
+  customer     Customers      @relation(fields: [customer_id], references: [customer_id])
+  voucher      Vouchers?      @relation(fields: [voucher_id], references: [voucher_id])
+  orderDetails OrderDetails[]
+}
+
+// Model OrderDetails (Chi tiết đơn hàng)
+model OrderDetails {
+  order_detail_id Int             @id @default(autoincrement())
+  order_id        Int
+  variant_id      Int
+  quantity        Int
+  price           Int // Giá tại thời điểm mua
+  order           Orders          @relation(fields: [order_id], references: [order_id])
+  variant         ProductVariants @relation(fields: [variant_id], references: [variant_id])
+}
+
+model Comments {
+  comment_id  Int       @id @default(autoincrement())
+  product_id  Int
+  customer_id Int
+  content     String // Nội dung bình luận
+  created_at  DateTime  @default(now()) // Ngày đăng
+  product     Products  @relation(fields: [product_id], references: [product_id])
+  customer    Customers @relation(fields: [customer_id], references: [customer_id])
+}
+
+// Model Ratings (Đánh giá)
+model Ratings {
+  rating_id   Int       @id @default(autoincrement())
+  product_id  Int
+  customer_id Int
+  rating      Int // Điểm đánh giá (1-5)
+  created_at  DateTime  @default(now()) // Ngày đánh giá
+  product     Products  @relation(fields: [product_id], references: [product_id])
+  customer    Customers @relation(fields: [customer_id], references: [customer_id])
+}
