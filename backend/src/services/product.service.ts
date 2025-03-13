@@ -1,5 +1,5 @@
 import { BaseService } from "./base.service";
-import { Products } from "@prisma/client";
+import { ProductImages, Products, ProductVariants } from "@prisma/client";
 
 export class ProductService extends BaseService {
   async getAllProducts() {
@@ -8,6 +8,8 @@ export class ProductService extends BaseService {
         category: true,
         brand: true,
         variants: true,
+        ratings: true,
+        images: true,
       },
     });
   }
@@ -18,28 +20,47 @@ export class ProductService extends BaseService {
       include: {
         category: true,
         brand: true,
+        images: {
+          include: {
+            color: true,
+          },
+        },
         variants: {
           include: {
             color: true,
             storage: true,
+            ram: true,
           },
         },
-        comments: {
-          include: {
-            customer: true,
-          },
-        },
+
         ratings: true,
       },
     });
   }
 
-  async createProduct(data: Omit<Products, "product_id">) {
-    return this.prisma.products.create({
-      data,
+  async getProductImages(imageId: number) {
+    return this.prisma.productImages.findUnique({
+      where: { image_id: imageId },
     });
   }
 
+  async createProduct(product: Omit<Products, "product_id">) {
+    return this.prisma.products.create({
+      data: product,
+    });
+  }
+
+  async createProductImages(images: Omit<ProductImages, "image_id">[]) {
+    return this.prisma.productImages.createMany({
+      data: images,
+    });
+  }
+
+  async createProductVariants(variants: Omit<ProductVariants, "variant_id">[]) {
+    return this.prisma.productVariants.createMany({
+      data: variants,
+    });
+  }
   async updateProduct(productId: number, data: Partial<Products>) {
     return this.prisma.products.update({
       where: { product_id: productId },
@@ -47,9 +68,31 @@ export class ProductService extends BaseService {
     });
   }
 
+  async updateProductVariants(
+    variantId: number,
+    data: Partial<ProductVariants>
+  ) {
+    return this.prisma.productVariants.update({
+      where: { variant_id: variantId },
+      data,
+    });
+  }
+
   async deleteProduct(productId: number) {
     return this.prisma.products.delete({
       where: { product_id: productId },
+    });
+  }
+
+  async deleteProductImages(imageId: number) {
+    return this.prisma.productImages.delete({
+      where: { image_id: imageId },
+    });
+  }
+
+  async deleteProductVariants(variantId: number) {
+    return this.prisma.productVariants.delete({
+      where: { variant_id: variantId },
     });
   }
 }

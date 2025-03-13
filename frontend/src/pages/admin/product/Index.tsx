@@ -1,112 +1,119 @@
-import { useEffect, useState } from "react";
-import { Table, Space, Button, Image } from "antd";
+import {
+  Table,
+  Space,
+  Button,
+  Image,
+  Typography,
+  Card,
+  Tag,
+  Tooltip,
+  Popconfirm,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useNavigate } from "react-router-dom";
-// import axios from 'axios';
+import { Link, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { Product, ProductImage } from "../../../types";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  PictureOutlined,
+  AppstoreAddOutlined,
+  DashboardOutlined,
+} from "@ant-design/icons";
 
-interface ProductVariant {
-  variant_id: number;
-  original_price: number;
-  promotional_price: number | null;
-  stock: number;
-  image_url: string | null;
-  color: { color_name: string };
-  storage: { storage_capacity: string };
-}
-
-interface Product {
-  product_id: number;
-  product_name: string;
-  description: string | null;
-  brand: { brand_name: string };
-  category: { category_name: string };
-  variants: ProductVariant[];
-}
+const { Title, Text } = Typography;
 
 const ProductList = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading } = useQuery({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const response = await fetch("http://localhost:8080/api/v1/products");
+      return response.json();
+    },
+  });
 
   const navigation = useNavigate();
-  useEffect(() => {
-    fetchProducts();
-  }, []);
 
-  const fetchProducts = async () => {
-    try {
-      setProducts([]);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const columns: ColumnsType<Product> = [
+  const columns: ColumnsType<Product & { images: ProductImage[] }> = [
     {
-      title: "Image",
+      title: "Hình ảnh",
       key: "image",
       render: (_, record) => (
         <Image
-          width={50}
-          src={record.variants[0]?.image_url || "/placeholder.png"}
+          width={60}
+          height={60}
+          style={{ objectFit: "cover", borderRadius: "4px" }}
+          src={record?.images?.[0]?.image_url || ""}
           alt={record.product_name}
         />
       ),
     },
     {
-      title: "Product Name",
+      title: "Tên sản phẩm",
       dataIndex: "product_name",
       key: "product_name",
+      render: (text) => <Text strong>{text}</Text>,
     },
     {
-      title: "Brand",
+      title: "Thương hiệu",
       dataIndex: ["brand", "brand_name"],
       key: "brand",
+      render: (text) => <Tag color="blue">{text}</Tag>,
     },
     {
-      title: "Category",
+      title: "Danh mục",
       dataIndex: ["category", "category_name"],
       key: "category",
+      render: (text) => <Tag color="green">{text}</Tag>,
     },
     {
-      title: "Variants",
-      key: "variants",
-      render: (_, record) => (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {record.variants.map((variant) => (
-            <li key={variant.variant_id}>
-              {variant.color.color_name} - {variant.storage.storage_capacity}:
-              {variant.promotional_price ? (
-                <>
-                  <span
-                    style={{
-                      textDecoration: "line-through",
-                      marginRight: "8px",
-                    }}
-                  >
-                    ${variant.original_price}
-                  </span>
-                  <span style={{ color: "red" }}>
-                    ${variant.promotional_price}
-                  </span>
-                </>
-              ) : (
-                <span>${variant.original_price}</span>
-              )}
-              (Stock: {variant.stock})
-            </li>
-          ))}
-        </ul>
-      ),
-    },
-    {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (_, record) => (
         <Space size="middle">
-          <Button type="primary">Edit</Button>
-          <Button danger>Delete</Button>
+          <Tooltip title="Chỉnh sửa">
+            <Link to={`/admin/products/edit/${record.product_id}`}>
+              <Button type="primary" icon={<EditOutlined />} size="middle" />
+            </Link>
+          </Tooltip>
+          <Tooltip title="Thêm ảnh và màu sắc">
+            <Link
+              to={`/admin/products/add/product-color-image/${record.product_id}`}
+            >
+              <Button
+                type="default"
+                icon={<PictureOutlined />}
+                size="middle"
+                style={{ backgroundColor: "#13c2c2", color: "white" }}
+              />
+            </Link>
+          </Tooltip>
+          <Tooltip title="Thêm biến thể">
+            <Link
+              to={`/admin/products/add/product-variants/${record.product_id}`}
+            >
+              <Button
+                type="default"
+                icon={<AppstoreAddOutlined />}
+                size="middle"
+                style={{ backgroundColor: "#722ed1", color: "white" }}
+              />
+            </Link>
+          </Tooltip>
+          <Tooltip title="Xóa">
+            <Popconfirm
+              title="Bạn có chắc chắn muốn xóa sản phẩm này không?"
+              onConfirm={() => {}}
+            >
+              <Button
+                type="default"
+                danger
+                icon={<DeleteOutlined />}
+                size="middle"
+              />
+            </Popconfirm>
+          </Tooltip>
         </Space>
       ),
     },
@@ -114,28 +121,45 @@ const ProductList = () => {
 
   return (
     <div style={{ padding: "24px" }}>
-      <div
-        style={{
-          marginBottom: "16px",
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <h1>Products</h1>
-        <Button
-          type="primary"
-          onClick={() => navigation("/admin/products/add")}
+      <Card style={{ borderRadius: "8px", marginBottom: "16px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "16px",
+          }}
         >
-          Add New Product
-        </Button>
-      </div>
-      <Table
-        columns={columns}
-        dataSource={products}
-        rowKey="product_id"
-        loading={loading}
-        pagination={{ pageSize: 10 }}
-      />
+          <Space align="center">
+            <DashboardOutlined style={{ fontSize: "24px", color: "#1890ff" }} />
+            <Title level={3} style={{ margin: 0 }}>
+              Quản lý sản phẩm
+            </Title>
+          </Space>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            size="large"
+            onClick={() => navigation("/admin/products/add")}
+          >
+            Thêm sản phẩm mới
+          </Button>
+        </div>
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey="product_id"
+          loading={isLoading}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `Tổng cộng ${total} sản phẩm`,
+          }}
+          bordered
+          size="middle"
+          scroll={{ x: "max-content" }}
+        />
+      </Card>
     </div>
   );
 };

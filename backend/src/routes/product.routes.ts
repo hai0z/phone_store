@@ -1,6 +1,5 @@
 import { Router } from "express";
 import productController from "../controllers/product.controller";
-import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -12,12 +11,15 @@ router.get("/:id", productController.getProductById);
 router.get("/:id/variants", productController.getProductVariants);
 
 // Admin only routes
-router.post("/", authMiddleware(["admin"]), productController.createProduct);
-router.put("/:id", authMiddleware(["admin"]), productController.updateProduct);
-router.delete(
-  "/:id",
-  authMiddleware(["admin"]),
-  productController.deleteProduct
-);
+router.post("/", productController.createProduct);
+router.post("/:id/images", productController.createProductImages);
+router.post("/variants", productController.createProductVariants);
+
+router.put("/:id", productController.updateProduct);
+router.put("/variants/:id", productController.updateProductVariant);
+
+router.delete("/:id", productController.deleteProduct);
+router.delete("/images/:id", productController.deleteProductImages);
+router.delete("/variants/:id", productController.deleteProductVariants);
 
 export default router;

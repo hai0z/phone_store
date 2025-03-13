@@ -9,7 +9,44 @@ interface LoginResponse {
 }
 
 export class AuthService extends BaseService {
-  private readonly JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+  private readonly JWT_SECRET =
+    process.env.JWT_SECRET || "mobile-zone-secret-key";
+
+  async customerRegister(data: {
+    full_name: string;
+    email: string;
+    phone: string;
+    password: string;
+  }): Promise<LoginResponse> {
+    // Check if customer already exists
+    const existingCustomer = await this.prisma.customers.findFirst({
+      where: {
+        OR: [{ email: data.email }, { phone: data.phone }],
+      },
+    });
+
+    if (existingCustomer) {
+      throw new Error("Email or phone number already registered");
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    // Create new customer
+    const customer = await this.prisma.customers.create({
+      data: {
+        ...data,
+        password: hashedPassword,
+      },
+    });
+
+    const { password: _, ...customerData } = customer;
+    return {
+      user: customerData,
+      token: this.generateToken(customer.customer_id, "customer"),
+      role: "customer",
+    };
+  }
 
   async adminLogin(username: string, password: string): Promise<LoginResponse> {
     const admin = await this.prisma.admin.findUnique({
@@ -28,9 +65,14 @@ export class AuthService extends BaseService {
     };
   }
 
-  async customerLogin(email: string, password: string): Promise<LoginResponse> {
-    const customer = await this.prisma.customers.findUnique({
-      where: { email },
+  async customerLogin(
+    emailOrPhone: string,
+    password: string
+  ): Promise<LoginResponse> {
+    const customer = await this.prisma.customers.findFirst({
+      where: {
+        OR: [{ email: emailOrPhone }, { phone: emailOrPhone }],
+      },
     });
 
     if (!customer || !(await bcrypt.compare(password, customer.password))) {

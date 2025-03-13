@@ -6,3 +6,6 @@ export * from "./order.service";
 export * from "./voucher.service";
 export * from "./filter.service";
 export * from "./rating.service";
+export * from "./upload.service";
+export * from "./brand.service";
+export * from "./categories.service";

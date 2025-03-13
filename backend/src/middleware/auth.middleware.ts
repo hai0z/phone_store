@@ -35,7 +35,7 @@ export const authMiddleware = (allowedRoles: string[]) => {
       // Attach user to request object
       req.user = user;
       next();
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === "Invalid token") {
         return res.status(401).json({ message: "Invalid or expired token" });
       }

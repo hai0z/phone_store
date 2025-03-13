@@ -1,5 +1,4 @@
 import { BaseService } from "./base.service";
-import { Comments, Ratings } from "@prisma/client";
 
 export class RatingService extends BaseService {
   // Rating methods
@@ -57,94 +56,6 @@ export class RatingService extends BaseService {
       averageRating,
       totalRatings: ratings.length,
       distribution: ratingDistribution,
-    };
-  }
-
-  // Comment methods
-  async addComment(productId: number, customerId: number, content: string) {
-    return this.prisma.comments.create({
-      data: {
-        product_id: productId,
-        customer_id: customerId,
-        content,
-      },
-      include: {
-        customer: {
-          select: {
-            customer_id: true,
-            full_name: true,
-          },
-        },
-      },
-    });
-  }
-
-  async getProductComments(
-    productId: number,
-    page: number = 1,
-    limit: number = 10
-  ) {
-    const total = await this.prisma.comments.count({
-      where: { product_id: productId },
-    });
-
-    const comments = await this.prisma.comments.findMany({
-      where: { product_id: productId },
-      include: {
-        customer: {
-          select: {
-            customer_id: true,
-            full_name: true,
-          },
-        },
-      },
-      orderBy: {
-        created_at: "desc",
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
-
-    return {
-      comments,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
-
-  async updateComment(commentId: number, content: string) {
-    return this.prisma.comments.update({
-      where: { comment_id: commentId },
-      data: { content },
-    });
-  }
-
-  async deleteComment(commentId: number) {
-    return this.prisma.comments.delete({
-      where: { comment_id: commentId },
-    });
-  }
-
-  // Combined stats
-  async getProductFeedbackStats(productId: number) {
-    const [ratings, comments] = await Promise.all([
-      this.getProductRatings(productId),
-      this.prisma.comments.count({
-        where: { product_id: productId },
-      }),
-    ]);
-
-    return {
-      ratings: {
-        average: ratings.averageRating,
-        total: ratings.totalRatings,
-        distribution: ratings.distribution,
-      },
-      totalComments: comments,
     };
   }
 }

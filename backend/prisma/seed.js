@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -16,6 +17,7 @@ async function main() {
     prisma.brands.deleteMany(),
     prisma.colors.deleteMany(),
     prisma.storages.deleteMany(),
+    prisma.ram.deleteMany(),
     prisma.customers.deleteMany(),
     prisma.admin.deleteMany(),
     prisma.vouchers.deleteMany(),
@@ -33,6 +35,7 @@ async function main() {
   await prisma.$executeRaw`ALTER TABLE Brands AUTO_INCREMENT = 1`;
   await prisma.$executeRaw`ALTER TABLE Colors AUTO_INCREMENT = 1`;
   await prisma.$executeRaw`ALTER TABLE Storages AUTO_INCREMENT = 1`;
+  await prisma.$executeRaw`ALTER TABLE Ram AUTO_INCREMENT = 1`;
   await prisma.$executeRaw`ALTER TABLE Customers AUTO_INCREMENT = 1`;
   await prisma.$executeRaw`ALTER TABLE Admin AUTO_INCREMENT = 1`;
   await prisma.$executeRaw`ALTER TABLE Vouchers AUTO_INCREMENT = 1`;
@@ -51,19 +54,18 @@ async function main() {
   // Create Categories
   const categories = await prisma.categories.createMany({
     data: [
-      { category_name: "Flagship", description: "High-end smartphones" },
-      { category_name: "Mid-range", description: "Mid-range smartphones" },
-      { category_name: "Budget", description: "Affordable smartphones" },
+      { category_name: "Điện thoại di động" },
+      { category_name: "Máy tính bảng" },
     ],
   });
 
   // Create Brands
   const brands = await prisma.brands.createMany({
     data: [
-      { brand_name: "Apple" },
-      { brand_name: "Samsung" },
-      { brand_name: "Xiaomi" },
-      { brand_name: "OPPO" },
+      { brand_name: "Apple", image_url: "brands/apple.png" },
+      { brand_name: "Samsung", image_url: "brands/samsung.png" },
+      { brand_name: "Xiaomi", image_url: "brands/xiaomi.png" },
+      { brand_name: "OPPO", image_url: "brands/oppo.png" },
     ],
   });
 
@@ -76,6 +78,11 @@ async function main() {
       { color_name: "Silver", hex: "#C0C0C0" },
       { color_name: "Blue", hex: "#0000FF" },
     ],
+  });
+
+  // Create RAM options
+  const ramOptions = await prisma.ram.createMany({
+    data: [{ capacity: "8GB" }, { capacity: "12GB" }, { capacity: "16GB" }],
   });
 
   // Create Storages
@@ -95,33 +102,29 @@ async function main() {
       category_id: 1,
       brand_id: 1,
       description: "Apple's latest flagship smartphone",
+      release_date: new Date("2022-09-16"),
       specs: JSON.stringify({
         screen: "6.7-inch OLED",
         processor: "A16 Bionic",
         camera: "48MP + 12MP + 12MP",
+        battery: "4323 mAh",
       }),
+      article:
+        "Experience the ultimate iPhone with the new iPhone 14 Pro Max...",
     },
     {
       product_name: "Samsung Galaxy S23 Ultra",
       category_id: 1,
       brand_id: 2,
       description: "Samsung's premium flagship smartphone",
+      release_date: new Date("2023-02-17"),
       specs: JSON.stringify({
         screen: "6.8-inch Dynamic AMOLED",
         processor: "Snapdragon 8 Gen 2",
         camera: "200MP + 12MP + 10MP + 10MP",
+        battery: "5000 mAh",
       }),
-    },
-    {
-      product_name: "Xiaomi 13 Pro",
-      category_id: 1,
-      brand_id: 3,
-      description: "Xiaomi's flagship device",
-      specs: JSON.stringify({
-        screen: "6.73-inch AMOLED",
-        processor: "Snapdragon 8 Gen 2",
-        camera: "50MP + 50MP + 50MP",
-      }),
+      article: "Discover the power of Galaxy with the S23 Ultra...",
     },
   ];
 
@@ -133,18 +136,29 @@ async function main() {
     // Create variants for each product
     const variants = [];
     for (let colorId = 1; colorId <= 3; colorId++) {
+      // Create variants with different storage and RAM combinations
       for (let storageId = 1; storageId <= 3; storageId++) {
-        variants.push({
-          product_id: createdProduct.product_id,
-          color_id: colorId,
-          storage_id: storageId,
-          original_price: 20000000 + storageId * 5000000,
-          sale_price: 20000000 + storageId * 5000000,
-          promotional_price: 19000000 + storageId * 5000000,
-          promotion_start: new Date(),
-          promotion_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          stock: 50,
-        });
+        for (let ramId = 1; ramId <= 2; ramId++) {
+          // Calculate prices based on storage capacity
+          const basePrice = 20000000;
+          const storageMultiplier = 5000000;
+          const originalPrice = basePrice + storageId * storageMultiplier;
+
+          variants.push({
+            product_id: createdProduct.product_id,
+            variant_id: variants.length + 1, // Add variant_id as required
+            color_id: colorId,
+            storage_id: storageId,
+            ram_id: ramId,
+            original_price: originalPrice,
+            sale_price: originalPrice, // Keep same as original price
+            promotional_price: originalPrice - 1000000 || null, // Set promotional price 1M less or null
+            promotion_start: new Date() || null,
+            promotion_end:
+              new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) || null, // 30 days from now
+            stock: 50,
+          });
+        }
       }
 
       // Create product images for each color
@@ -153,38 +167,16 @@ async function main() {
           {
             product_id: createdProduct.product_id,
             color_id: colorId,
-            image_url: `https://example.com/images/${createdProduct.product_name.replace(
-              / /g,
-              "-"
-            )}/main-${colorId}.jpg`,
-            image_type: "main",
+            image_url: `products/${createdProduct.product_name
+              .replace(/ /g, "-")
+              .toLowerCase()}/main-${colorId}.jpg`,
           },
           {
             product_id: createdProduct.product_id,
             color_id: colorId,
-            image_url: `https://example.com/images/${createdProduct.product_name.replace(
-              / /g,
-              "-"
-            )}/thumbnail-${colorId}.jpg`,
-            image_type: "thumbnail",
-          },
-          {
-            product_id: createdProduct.product_id,
-            color_id: colorId,
-            image_url: `https://example.com/images/${createdProduct.product_name.replace(
-              / /g,
-              "-"
-            )}/gallery-1-${colorId}.jpg`,
-            image_type: "gallery",
-          },
-          {
-            product_id: createdProduct.product_id,
-            color_id: colorId,
-            image_url: `https://example.com/images/${createdProduct.product_name.replace(
-              / /g,
-              "-"
-            )}/gallery-2-${colorId}.jpg`,
-            image_type: "gallery",
+            image_url: `products/${createdProduct.product_name
+              .replace(/ /g, "-")
+              .toLowerCase()}/thumbnail-${colorId}.jpg`,
           },
         ],
       });

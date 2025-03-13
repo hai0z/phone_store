@@ -7,6 +7,7 @@ export class ProductVariantService extends BaseService {
       where: { variant_id: variantId },
       include: {
         product: true,
+        ram: true,
         color: true,
         storage: true,
       },
@@ -19,6 +20,7 @@ export class ProductVariantService extends BaseService {
       include: {
         color: true,
         storage: true,
+        ram: true,
       },
     });
   }
@@ -29,6 +31,7 @@ export class ProductVariantService extends BaseService {
       include: {
         color: true,
         storage: true,
+        ram: true,
       },
     });
   }

@@ -12,12 +12,28 @@ import {
   AppstoreOutlined,
   TagOutlined,
   BarChartOutlined,
+  PhoneOutlined,
+  MailOutlined,
+  FacebookOutlined,
+  InstagramOutlined,
 } from "@ant-design/icons";
-import { Layout, Menu, Button, theme, Avatar, Dropdown } from "antd";
+import {
+  Layout,
+  Menu,
+  Button,
+  theme,
+  Avatar,
+  Dropdown,
+  Row,
+  Col,
+  Typography,
+  Space,
+} from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
 import Title from "antd/es/typography/Title";
 
-const { Header, Sider, Content } = Layout;
+const { Header, Sider, Content, Footer } = Layout;
+const { Text, Link } = Typography;
 
 const AdminLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -38,6 +54,7 @@ const AdminLayout: React.FC = () => {
       key: "products",
       icon: <MobileOutlined />,
       label: "Sản phẩm",
+
       onClick: () => navigate("/admin/products"),
     },
     {
@@ -205,6 +222,64 @@ const AdminLayout: React.FC = () => {
         >
           <Outlet />
         </Content>
+        <Footer
+          style={{
+            background: "#001529",
+            color: "white",
+            padding: "24px 0",
+            marginLeft: -12,
+          }}
+        >
+          <Row justify="space-around" align="top">
+            <Col span={6}>
+              <Title level={4} style={{ color: "white" }}>
+                Về Mobile Zone
+              </Title>
+              <Text style={{ color: "white", display: "block" }}>
+                Mobile Zone - Cửa hàng điện thoại uy tín hàng đầu Việt Nam
+              </Text>
+              <Text style={{ color: "white", display: "block" }}>
+                Chuyên cung cấp các sản phẩm điện thoại chính hãng
+              </Text>
+            </Col>
+            <Col span={6}>
+              <Title level={4} style={{ color: "white" }}>
+                Liên hệ
+              </Title>
+              <Text style={{ color: "white", display: "block" }}>
+                <PhoneOutlined /> Hotline: 1900 1234
+              </Text>
+              <Text style={{ color: "white", display: "block" }}>
+                <MailOutlined /> Email: contact@mobilezone.com
+              </Text>
+              <Text style={{ color: "white", display: "block" }}>
+                Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM
+              </Text>
+            </Col>
+            <Col span={6}>
+              <Title level={4} style={{ color: "white" }}>
+                Theo dõi chúng tôi
+              </Title>
+              <Space size="middle">
+                <Link href="https://facebook.com" target="_blank">
+                  <FacebookOutlined
+                    style={{ fontSize: "24px", color: "white" }}
+                  />
+                </Link>
+                <Link href="https://instagram.com" target="_blank">
+                  <InstagramOutlined
+                    style={{ fontSize: "24px", color: "white" }}
+                  />
+                </Link>
+              </Space>
+            </Col>
+          </Row>
+          <Row justify="center" style={{ marginTop: "24px" }}>
+            <Text style={{ color: "white" }}>
+              © 2024 Mobile Zone. All rights reserved.
+            </Text>
+          </Row>
+        </Footer>
       </Layout>
     </Layout>
   );
