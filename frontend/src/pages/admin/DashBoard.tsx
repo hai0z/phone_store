@@ -73,7 +73,7 @@ interface DashboardData {
 
 const DashBoard: React.FC = () => {
   const { token } = useToken();
-  
+
   const {
     data: dashboardData,
     isLoading,
@@ -106,17 +106,17 @@ const DashBoard: React.FC = () => {
       />
     );
   }
-  
-  const formattedOrders =
-    dashboardData?.recentOrders.map((order) => ({
-      key: order.id.toString(),
-      orderId: `#ĐH${order.id.toString().padStart(3, "0")}`,
-      customer: order.customer.name,
-      product: order.orderDetails[0]?.variant.product.product_name || "N/A",
-      amount: order.total_amount,
-      status: order.status,
-      date: new Date(order.order_date).toLocaleDateString("vi-VN"),
-    })) || [];
+
+  // const formattedOrders =
+  //   dashboardData?.recentOrders.map((order) => ({
+  //     key: order?.id.toString(),
+  //     orderId: `#ĐH${order.id.toString().padStart(3, "0")}`,
+  //     customer: order.customer.name,
+  //     product: order.orderDetails[0]?.variant.product.product_name || "N/A",
+  //     amount: order.total_amount,
+  //     status: order.status,
+  //     date: new Date(order.order_date).toLocaleDateString("vi-VN"),
+  //   })) || [];
 
   const orderColumns = [
     {
@@ -158,17 +158,16 @@ const DashBoard: React.FC = () => {
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
-        const statusMap: Record<string, { color: string, text: string }> = {
+        const statusMap: Record<string, { color: string; text: string }> = {
           Completed: { color: "success", text: "Hoàn thành" },
           Processing: { color: "processing", text: "Đang xử lý" },
           Pending: { color: "warning", text: "Chờ xác nhận" },
         };
-        const statusInfo = statusMap[status] || { color: "default", text: status };
-        return (
-          <Tag color={statusInfo.color}>
-            {statusInfo.text}
-          </Tag>
-        );
+        const statusInfo = statusMap[status] || {
+          color: "default",
+          text: status,
+        };
+        return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
       },
     },
     {
@@ -216,7 +215,7 @@ const DashBoard: React.FC = () => {
       },
       dataLabels: {
         enabled: true,
-        formatter: function(val: number) {
+        formatter: function (val: number) {
           return val.toFixed(1) + "%";
         },
       },
@@ -239,19 +238,25 @@ const DashBoard: React.FC = () => {
   return (
     <div style={{ padding: "24px" }}>
       <div style={{ marginBottom: 24, display: "flex", alignItems: "center" }}>
-        <DashboardOutlined style={{ fontSize: 24, marginRight: 12, color: token.colorPrimary }} />
-        <Title level={2} style={{ margin: 0 }}>Bảng Điều Khiển</Title>
+        <DashboardOutlined
+          style={{ fontSize: 24, marginRight: 12, color: token.colorPrimary }}
+        />
+        <Title level={2} style={{ margin: 0 }}>
+          Bảng Điều Khiển
+        </Title>
       </div>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable style={{ borderRadius: 8, height: "100%" }}>
             <Space direction="horizontal" size="large" align="center">
-              <div style={{ 
-                backgroundColor: "rgba(24, 144, 255, 0.1)", 
-                padding: 12, 
-                borderRadius: "50%" 
-              }}>
+              <div
+                style={{
+                  backgroundColor: "rgba(24, 144, 255, 0.1)",
+                  padding: 12,
+                  borderRadius: "50%",
+                }}
+              >
                 <DollarCircleOutlined
                   style={{ fontSize: "28px", color: "#1890ff" }}
                 />
@@ -273,11 +278,13 @@ const DashBoard: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable style={{ borderRadius: 8, height: "100%" }}>
             <Space direction="horizontal" size="large" align="center">
-              <div style={{ 
-                backgroundColor: "rgba(82, 196, 26, 0.1)", 
-                padding: 12, 
-                borderRadius: "50%" 
-              }}>
+              <div
+                style={{
+                  backgroundColor: "rgba(82, 196, 26, 0.1)",
+                  padding: 12,
+                  borderRadius: "50%",
+                }}
+              >
                 <ShoppingCartOutlined
                   style={{ fontSize: "28px", color: "#52c41a" }}
                 />
@@ -296,11 +303,13 @@ const DashBoard: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable style={{ borderRadius: 8, height: "100%" }}>
             <Space direction="horizontal" size="large" align="center">
-              <div style={{ 
-                backgroundColor: "rgba(114, 46, 209, 0.1)", 
-                padding: 12, 
-                borderRadius: "50%" 
-              }}>
+              <div
+                style={{
+                  backgroundColor: "rgba(114, 46, 209, 0.1)",
+                  padding: 12,
+                  borderRadius: "50%",
+                }}
+              >
                 <UserOutlined style={{ fontSize: "28px", color: "#722ed1" }} />
               </div>
               <div>
@@ -319,12 +328,16 @@ const DashBoard: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable style={{ borderRadius: 8, height: "100%" }}>
             <Space direction="horizontal" size="large" align="center">
-              <div style={{ 
-                backgroundColor: "rgba(250, 140, 22, 0.1)", 
-                padding: 12, 
-                borderRadius: "50%" 
-              }}>
-                <ProductOutlined style={{ fontSize: "28px", color: "#fa8c16" }} />
+              <div
+                style={{
+                  backgroundColor: "rgba(250, 140, 22, 0.1)",
+                  padding: 12,
+                  borderRadius: "50%",
+                }}
+              >
+                <ProductOutlined
+                  style={{ fontSize: "28px", color: "#fa8c16" }}
+                />
               </div>
               <div>
                 <Text type="secondary">Tổng sản phẩm</Text>
@@ -341,21 +354,27 @@ const DashBoard: React.FC = () => {
 
       <Row gutter={[16, 16]} style={{ marginTop: "24px" }}>
         <Col xs={24} lg={16}>
-          <Card 
-            hoverable 
+          <Card
+            hoverable
             title={<Title level={4}>Phân tích doanh thu</Title>}
             style={{ borderRadius: 8 }}
           >
-            <div style={{ height: 350, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Text type="secondary">Biểu đồ phân tích doanh thu sẽ hiển thị ở đây</Text>
+            <div
+              style={{
+                height: 350,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text type="secondary">
+                Biểu đồ phân tích doanh thu sẽ hiển thị ở đây
+              </Text>
             </div>
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card 
-            hoverable 
-            style={{ borderRadius: 8 }}
-          >
+          <Card hoverable style={{ borderRadius: 8 }}>
             <ReactApexChart
               options={phoneModelsData.options}
               series={phoneModelsData.series}
@@ -368,12 +387,14 @@ const DashBoard: React.FC = () => {
 
       <Row gutter={[16, 16]} style={{ marginTop: "24px" }}>
         <Col xs={24}>
-          <Card 
-            hoverable 
+          <Card
+            hoverable
             title={
               <Space>
                 <ShoppingCartOutlined style={{ color: token.colorPrimary }} />
-                <Title level={4} style={{ margin: 0 }}>Đơn hàng gần đây</Title>
+                <Title level={4} style={{ margin: 0 }}>
+                  Đơn hàng gần đây
+                </Title>
               </Space>
             }
             style={{ borderRadius: 8 }}
@@ -381,7 +402,7 @@ const DashBoard: React.FC = () => {
           >
             <Table
               columns={orderColumns}
-              dataSource={formattedOrders}
+              dataSource={[]}
               pagination={{ pageSize: 5 }}
               size="middle"
               style={{ marginTop: 16 }}

@@ -9,7 +9,6 @@ import {
   Button,
   Radio,
   Divider,
-  message,
   Image,
   Rate,
   Breadcrumb,
@@ -18,6 +17,7 @@ import {
   Badge,
   Statistic,
   theme,
+  notification,
 } from "antd";
 import {
   ShoppingCartOutlined,
@@ -29,9 +29,8 @@ import {
   SafetyCertificateOutlined,
   ThunderboltOutlined,
   ClockCircleOutlined,
-  FireOutlined,
 } from "@ant-design/icons";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ProductImage, ProductVariant } from "../../../types";
@@ -50,17 +49,17 @@ const ProductDetail: React.FC = () => {
   const [selectedColorId, setSelectedColorId] = useState<number>();
   const [selectedRamId, setSelectedRamId] = useState<number>();
   const [selectedStorageId, setSelectedStorageId] = useState<number>();
-  const [messageApi, contextHolder] = message.useMessage();
+  const [api, contextHolder] = notification.useNotification();
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [filteredImages, setFilteredImages] = useState<ProductImage[]>([]);
   const [activeThumbIndex, setActiveThumbIndex] = useState(0);
   const [availableRams, setAvailableRams] = useState<any[]>([]);
   const [availableStorages, setAvailableStorages] = useState<any[]>([]);
-
+  const navigate = useNavigate();
   const { token } = theme.useToken();
 
-  const { addItem } = useCartStore();
+  const { addItem, items, setOrder } = useCartStore();
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", id],
@@ -229,20 +228,67 @@ const ProductDetail: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!selectedVariant) {
-      messageApi.error("Vui lòng chọn phiên bản sản phẩm");
+      api.error({
+        message: "Vui lòng chọn phiên bản sản phẩm",
+        placement: "top",
+      });
       return;
     }
 
     if (selectedVariant.stock <= 0) {
-      messageApi.error("Sản phẩm đã hết hàng");
+      api.error({
+        message: "Sản phẩm đã hết hàng",
+        placement: "top",
+      });
       return;
     }
 
-    messageApi.success("Đã thêm vào giỏ hàng");
+    const itemQuantity = items.find(
+      (item) => item.variant_id === selectedVariant.variant_id
+    )?.quantity;
+
+    if (itemQuantity === undefined || itemQuantity < 5) {
+      addItem({
+        variant_id: selectedVariant.variant_id,
+        quantity: 1,
+      });
+      api.success({
+        message: "Đã thêm vào giỏ hàng",
+        placement: "top",
+      });
+    } else {
+      api.error({
+        message: "Số lượng sản phẩm không được vượt quá 5",
+        placement: "top",
+      });
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (!selectedVariant) {
+      api.error({
+        message: "Vui lòng chọn phiên bản sản phẩm",
+        placement: "top",
+      });
+      return;
+    }
+
+    if (selectedVariant.stock <= 0) {
+      api.error({
+        message: "Sản phẩm đã hết hàng",
+        placement: "top",
+      });
+      return;
+    }
     addItem({
       variant_id: selectedVariant.variant_id,
       quantity: 1,
     });
+    setOrder({
+      items: [{ variant_id: selectedVariant.variant_id, quantity: 1 }],
+      total: selectedVariant.sale_price,
+    });
+    navigate("/checkout");
   };
 
   const handlePreview = (image: string) => {
@@ -837,6 +883,7 @@ const ProductDetail: React.FC = () => {
                       size="large"
                       type="primary"
                       icon={<ThunderboltOutlined />}
+                      onClick={handleBuyNow}
                       disabled={!selectedVariant || selectedVariant.stock <= 0}
                       style={{
                         borderRadius: 8,

@@ -49,15 +49,29 @@ export class OrderService extends BaseService {
     return this.prisma.orders.findUnique({
       where: { order_id: orderId },
       include: {
-        customer: true,
+        customer: {
+          select: {
+            customer_id: true,
+            full_name: true,
+            email: true,
+            phone: true,
+          },
+        },
         voucher: true,
         orderDetails: {
           include: {
             variant: {
               include: {
-                product: true,
-                color: true,
+                product: {
+                  select: {
+                    product_id: true,
+                    product_name: true,
+                    images: true,
+                  },
+                },
+                ram: true,
                 storage: true,
+                color: true,
               },
             },
           },
@@ -90,7 +104,7 @@ export class OrderService extends BaseService {
       vnp_OrderInfo: "Thanh toán đơn hàng",
       vnp_TxnRef: orderId.toString(),
       vnp_IpAddr: "127.0.0.1",
-      vnp_ReturnUrl: `http://localhost:5173/checkout/vnpay-return`,
+      vnp_ReturnUrl: `http://localhost:5173/checkout/result?type=vnpay`,
       vnp_Locale: VnpLocale.VN,
       vnp_CreateDate: dateFormat(new Date()),
       vnp_ExpireDate: dateFormat(oneHourLater),

@@ -32,6 +32,8 @@ import {
   EnvironmentOutlined,
   UserOutlined,
   PhoneOutlined,
+  QuestionCircleOutlined,
+  FileTextOutlined,
 } from "@ant-design/icons";
 
 import { useCartStore } from "../../../store/cartStore";
@@ -80,6 +82,9 @@ const Checkout: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = useToken();
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null);
+
+  const [confirmOrderModalVisible, setConfirmOrderModalVisible] =
+    useState(false);
 
   const { order, clearOrder, removeItem } = useCartStore();
 
@@ -184,11 +189,11 @@ const Checkout: React.FC = () => {
         });
       } else {
         await wait(1500).then(() => {
-          messageApi.success("Đặt hàng thành công", 1.5);
           clearOrder();
           cartItems.forEach((item) => {
             removeItem(item.variant_id);
           });
+          navigate("/checkout/result?type=normal");
         });
       }
       await wait(1500).then(() => {
@@ -550,6 +555,19 @@ const Checkout: React.FC = () => {
                   </Text>
                 </div>
               </div>
+              <div>
+                <Title level={5}>
+                  <FileTextOutlined
+                    style={{ marginRight: 8, color: token.colorPrimary }}
+                  />
+                  Ghi chú
+                </Title>
+                <div style={{ marginLeft: 24 }}>
+                  <Text strong>
+                    {form.getFieldValue("note") || "Không có ghi chú"}
+                  </Text>
+                </div>
+              </div>
 
               <div>
                 <Title level={5}>
@@ -582,16 +600,20 @@ const Checkout: React.FC = () => {
                           <br />
                           <Space>
                             <Tag color="blue">{item.color}</Tag>
-                            <Tag color="purple">{item.storage}</Tag>
+                            <Tag color="purple">
+                              {item.ram}/{item.storage}
+                            </Tag>
                           </Space>
                         </Col>
                         <Col xs={6} sm={6} style={{ textAlign: "right" }}>
                           <Text type="secondary">
-                            {item.quantity} x ${item.salePrice.toLocaleString()}
+                            {item.quantity} x {item.salePrice.toLocaleString()}{" "}
+                            đ
                           </Text>
                           <br />
                           <Text strong>
-                            ${(item.quantity * item.salePrice).toLocaleString()}
+                            {(item.quantity * item.salePrice).toLocaleString()}{" "}
+                            đ
                           </Text>
                         </Col>
                       </Row>
@@ -619,7 +641,7 @@ const Checkout: React.FC = () => {
               <Button
                 type="primary"
                 size="large"
-                onClick={() => handleSubmit(form.getFieldsValue())}
+                onClick={() => setConfirmOrderModalVisible(true)}
                 icon={<CheckCircleFilled />}
                 loading={orderLoading}
               >
@@ -730,7 +752,7 @@ const Checkout: React.FC = () => {
                 </Col>
                 <Col span={8} style={{ textAlign: "right" }}>
                   <Text type="success">
-                    {discount > 0 ? `-$${discount.toLocaleString()}` : "$0"}
+                    {discount > 0 ? `-${discount.toLocaleString()} đ` : "0 đ"}
                   </Text>
                 </Col>
               </Row>
@@ -761,10 +783,9 @@ const Checkout: React.FC = () => {
                 </Text>
               </Col>
               <Col span={12} style={{ textAlign: "right" }}>
-                <Text
-                  strong
-                  style={{ fontSize: 20, color: token.colorPrimary }}
-                ></Text>
+                <Text strong style={{ fontSize: 20, color: token.colorError }}>
+                  {totalPrice.toLocaleString()} đ
+                </Text>
               </Col>
             </Row>
           </Card>
@@ -796,7 +817,6 @@ const Checkout: React.FC = () => {
           Mã giảm giá mẫu: DISCOUNT10 (giảm 10%), FREESHIP (miễn phí vận chuyển)
         </Text>
       </Modal>
-
       <Modal
         title="Đang xử lý đơn hàng"
         open={orderLoading}
@@ -808,6 +828,40 @@ const Checkout: React.FC = () => {
           <Spin size="large" />
           <div style={{ marginTop: "16px" }}>
             <Text>Vui lòng đợi trong giây lát...</Text>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        title="Xác nhận đơn hàng"
+        open={confirmOrderModalVisible}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => setConfirmOrderModalVisible(false)}
+          >
+            Hủy
+          </Button>,
+          <Button
+            key="confirm"
+            type="primary"
+            onClick={() => handleSubmit(form.getFieldsValue())}
+          >
+            Xác nhận
+          </Button>,
+        ]}
+        closable={true}
+        onCancel={() => setConfirmOrderModalVisible(false)}
+        centered
+      >
+        <div style={{ textAlign: "center", padding: "32px" }}>
+          <QuestionCircleOutlined
+            style={{ fontSize: "48px", color: "#1890ff", marginBottom: "16px" }}
+          />
+          <div>
+            <Title level={4}>Xác nhận đặt hàng</Title>
+            <Text style={{ fontSize: "16px" }}>
+              Bạn chắc chắn muốn đặt hàng?
+            </Text>
           </div>
         </div>
       </Modal>

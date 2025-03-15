@@ -8,7 +8,6 @@ import {
   Button,
   Table,
   Tag,
-  Modal,
   List,
   Col,
   Row,
@@ -23,6 +22,8 @@ import {
 import { useAuth } from "../../../contexts/AuthContext";
 import AddAddressModal from "./components/AddAddressModal";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import dayjs from "dayjs";
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -34,6 +35,11 @@ const ProfilePage: React.FC = () => {
   const [form] = Form.useForm();
   const [addressForm] = Form.useForm();
 
+  const [searchParams] = useSearchParams();
+
+  const tab = searchParams.get("tab") || "1";
+
+  const navigate = useNavigate();
   // Fetch user data query
   const { data: userData } = useQuery({
     queryKey: ["user", user?.customer_id],
@@ -122,10 +128,19 @@ const ProfilePage: React.FC = () => {
       key: "order_id",
     },
     {
+      title: "Tên đơn hàng",
+      dataIndex: "orderDetails",
+      render: (orderDetails: any) => {
+        return orderDetails
+          .map((detail: any) => detail.variant.product.product_name)
+          .join(", ");
+      },
+    },
+    {
       title: "Ngày đặt",
-      dataIndex: "created_at",
-      key: "created_at",
-      render: (date: string) => new Date(date).toLocaleDateString("vi-VN"),
+      dataIndex: "order_date",
+      key: "order_date",
+      render: (date: string) => dayjs(date).format("DD/MM/YYYY HH:mm:ss"),
     },
     {
       title: "Tổng tiền",
@@ -140,23 +155,33 @@ const ProfilePage: React.FC = () => {
       render: (status: string) => (
         <Tag
           color={
-            status === "pending"
+            status === "cho_xac_nhan"
               ? "gold"
-              : status === "processing"
+              : status === "dang_giao_hang"
               ? "blue"
-              : status === "completed"
+              : status === "da_giao_hang"
               ? "green"
               : "red"
           }
         >
-          {status === "pending"
-            ? "Chờ xử lý"
-            : status === "processing"
-            ? "Đang xử lý"
-            : status === "completed"
+          {status === "cho_xac_nhan"
+            ? "Chờ xác nhận"
+            : status === "dang_giao_hang"
+            ? "Đang giao hàng"
+            : status === "da_giao_hang"
             ? "Hoàn thành"
             : "Đã hủy"}
         </Tag>
+      ),
+    },
+    {
+      title: "Hành động",
+      dataIndex: "order_id",
+      key: "order_id",
+      render: (order_id: number) => (
+        <Button type="link" onClick={() => navigate(`/order/${order_id}`)}>
+          Xem chi tiết
+        </Button>
       ),
     },
   ];
@@ -166,7 +191,7 @@ const ProfilePage: React.FC = () => {
     <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
       <Card>
         <Title level={2}>Tài khoản của tôi</Title>
-        <Tabs defaultActiveKey="1">
+        <Tabs defaultActiveKey={tab}>
           <TabPane
             tab={
               <span>

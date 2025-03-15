@@ -192,8 +192,44 @@ export class ProductController {
 
   filterProducts = async (req: Request, res: Response) => {
     try {
-      const filters = await this.filterService.filterProducts(req.query);
-      res.json(filters);
+      const {
+        brandIds,
+        categoryIds,
+        minPrice,
+        maxPrice,
+        colors,
+        storages,
+        search,
+        ram,
+      } = req.query;
+
+      const brandIdsArray = brandIds
+        ? (brandIds as string).split(",").map(Number)
+        : [];
+      const categoryIdsArray = categoryIds
+        ? (categoryIds as string).split(",").map(Number)
+        : [];
+      const colorsArray = colors
+        ? (colors as string).split(",").map(Number)
+        : [];
+      const storagesArray = storages
+        ? (storages as string).split(",").map(Number)
+        : [];
+      const ramArray = ram ? (ram as string).split(",").map(Number) : [];
+
+      const filteredProducts = await this.filterService.filterProducts({
+        ...req.query,
+        brandIds: brandIdsArray,
+        categoryIds: categoryIdsArray,
+        minPrice: Number(minPrice),
+        maxPrice: Number(maxPrice),
+        colors: colorsArray,
+        storages: storagesArray,
+        ram: ramArray,
+        search: search as string,
+      });
+
+      res.json(filteredProducts);
     } catch (error: any) {
       res
         .status(500)

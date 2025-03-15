@@ -1,12 +1,13 @@
+import dayjs from "dayjs";
 import { BaseService } from "./base.service";
 import { Prisma } from "@prisma/client";
-
 interface FilterOptions {
   brandIds?: number[];
   categoryIds?: number[];
   minPrice?: number;
   maxPrice?: number;
   colors?: number[];
+  ram?: number[];
   storages?: number[];
   search?: string;
   inStock?: boolean;
@@ -26,9 +27,10 @@ export class FilterService extends BaseService {
       storages,
       search,
       inStock,
+      ram,
       page = 1,
-      limit = 10,
-      sortBy,
+      limit = 16,
+      sortBy = "price_asc",
     } = options;
 
     // Build where conditions
@@ -59,6 +61,7 @@ export class FilterService extends BaseService {
                 maxPrice ? { original_price: { lte: maxPrice } } : {},
                 colors?.length ? { color_id: { in: colors } } : {},
                 storages?.length ? { storage_id: { in: storages } } : {},
+                ram?.length ? { ram_id: { in: ram } } : {},
               ],
             },
           },
@@ -84,13 +87,18 @@ export class FilterService extends BaseService {
       ...(sortBy === "name_asc" || sortBy === "name_desc" ? { orderBy } : {}),
       skip: (page - 1) * limit,
       take: limit,
-      include: {
+      select: {
+        product_id: true,
+        product_name: true,
         brand: true,
+        images: true,
+        sold_count: true,
         category: true,
         variants: {
           include: {
             color: true,
             storage: true,
+            ram: true,
           },
         },
         ratings: {
@@ -111,9 +119,13 @@ export class FilterService extends BaseService {
       // Get minimum price from variants for sorting
       minPrice: Math.min(
         ...product.variants.map((v) =>
-          v.promotional_price !== null && v.promotional_price < v.original_price
+          v.promotional_price &&
+          v.promotion_start &&
+          v.promotion_end &&
+          dayjs().isAfter(dayjs(v.promotion_start)) &&
+          dayjs().isBefore(dayjs(v.promotion_end))
             ? v.promotional_price
-            : v.original_price
+            : v.sale_price
         )
       ),
     }));
@@ -141,19 +153,21 @@ export class FilterService extends BaseService {
   }
 
   async getFilterOptions() {
-    const [brands, categories, colors, storages] = await Promise.all([
+    const [brands, categories, colors, storages, ram] = await Promise.all([
       this.prisma.brands.findMany(),
       this.prisma.categories.findMany(),
       this.prisma.colors.findMany(),
       this.prisma.storages.findMany(),
+      this.prisma.ram.findMany(),
     ]);
 
     const priceRange = await this.prisma.productVariants.aggregate({
       _min: {
         original_price: true,
+        promotional_price: true,
       },
       _max: {
-        original_price: true,
+        sale_price: true,
       },
     });
 
@@ -162,9 +176,10 @@ export class FilterService extends BaseService {
       categories,
       colors,
       storages,
+      ram,
       priceRange: {
         min: priceRange._min.original_price,
-        max: priceRange._max.original_price,
+        max: priceRange._max.sale_price,
       },
     };
   }

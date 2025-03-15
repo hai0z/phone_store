@@ -1,4 +1,13 @@
-import { Divider, Space, Statistic, Tag, Rate, Typography, theme } from "antd";
+import {
+  Divider,
+  Space,
+  Statistic,
+  Tag,
+  Rate,
+  Typography,
+  theme,
+  Tooltip,
+} from "antd";
 import { Card } from "antd";
 import dayjs from "dayjs";
 import { ProductVariant, Rating, ProductImage } from "../../../../types";
@@ -74,170 +83,90 @@ const ProductCard = ({ product }: { product: Product }) => {
         color={hasPromotion ? token.colorError : "transparent"}
       >
         <Card
+          hoverable
           style={{
-            borderRadius: token.borderRadiusLG,
-            overflow: "hidden",
-            transition: "all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)",
             height: "100%",
-            display: "flex",
-            flexDirection: "column",
+            borderRadius: "12px",
+            overflow: "hidden",
+            transition: "transform 0.3s",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
           }}
-          className="product-card"
           cover={
             <div
-              className="product-image-container"
               style={{
-                position: "relative",
-                padding: token.padding,
-                height: 280,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
+                padding: "20px",
+                background: "#f7f9fc",
+                textAlign: "center",
               }}
             >
               <img
                 alt={product.product_name}
                 src={mainImage}
-                style={{
-                  maxHeight: 260,
-                  maxWidth: "95%",
-                  objectFit: "contain",
-                  transition: "transform 0.5s ease",
-                  filter: "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1))",
-                }}
-                className="product-image"
+                style={{ height: "200px", objectFit: "contain" }}
               />
-              {hasPromotion && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 10,
-                    left: 10,
-                    background: token.colorError,
-                    color: "white",
-                    padding: "4px 8px",
-                    borderRadius: "16px",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  HOT DEAL
-                </div>
-              )}
             </div>
           }
         >
           <Meta
             title={
-              <div
-                style={{
-                  color: token.colorTextHeading,
-                  fontSize: token.fontSizeLG,
-                  fontWeight: 600,
-                  marginBottom: token.marginXS,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-                className="product-name-link"
-              >
-                {product.product_name}
-              </div>
+              <Tooltip title={product.product_name}>
+                <Text
+                  strong
+                  style={{ fontSize: "16px" }}
+                  ellipsis={{ tooltip: true }}
+                >
+                  {product.product_name}
+                </Text>
+              </Tooltip>
             }
             description={
               <Space
                 direction="vertical"
-                size={token.marginXS}
+                size="small"
                 style={{ width: "100%" }}
               >
-                <div
-                  className="price-container"
-                  style={{
-                    display: "flex",
-                    alignItems: "baseline",
-                    gap: "8px",
-                    padding: "8px",
-                    borderRadius: "8px",
-                  }}
-                >
+                <div>
                   {hasPromotion ? (
                     <>
-                      <Statistic
-                        value={firstVariant.promotional_price || 0}
-                        valueStyle={{
-                          color: token.colorError,
-                          fontSize: "1.5em",
-                        }}
-                        formatter={(value) => formatPrice(value as number)}
-                      />
+                      <Text type="danger" strong style={{ fontSize: "18px" }}>
+                        {formatPrice(promotionalPrice!)}
+                      </Text>
                       <Text
                         delete
                         type="secondary"
-                        style={{ fontSize: token.fontSizeSM }}
+                        style={{ marginLeft: "8px" }}
                       >
-                        {formatPrice(firstVariant.sale_price || 0)}
+                        {formatPrice(originalPrice)}
                       </Text>
                     </>
                   ) : (
-                    <Statistic
-                      value={firstVariant.sale_price || 0}
-                      valueStyle={{
-                        color: token.colorError,
-                        fontSize: "1.5em",
-                      }}
-                      formatter={(value) => formatPrice(value as number)}
-                    />
+                    <Text type="danger" strong style={{ fontSize: "18px" }}>
+                      {formatPrice(originalPrice)}
+                    </Text>
                   )}
                 </div>
 
-                <Divider style={{ margin: "8px 0" }} />
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "8px",
-                    borderRadius: "8px",
-                  }}
-                >
-                  <Tag
-                    color="blue"
-                    style={{
-                      margin: 0,
-                    }}
-                  >
-                    {firstVariant?.ram?.capacity} -{" "}
-                    {firstVariant?.storage?.storage_capacity}
-                  </Tag>
-                  <Badge color="green" count={`Đã bán ${product.sold_count}`} />
-                </div>
-
-                <div
-                  style={{
-                    marginTop: "8px",
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                  }}
-                >
+                <div>
                   <Rate
+                    allowHalf
                     disabled
-                    defaultValue={averageRating}
-                    style={{ fontSize: token.fontSizeSM }}
+                    defaultValue={averageRating || 5}
+                    style={{ fontSize: "14px" }}
                   />
                   <Text
                     type="secondary"
-                    style={{
-                      fontSize: token.fontSizeSM,
-                      marginLeft: "4px",
-                      fontStyle: "italic",
-                    }}
+                    style={{ marginLeft: "8px", fontSize: "12px" }}
                   >
-                    ({product?.ratings?.length} đánh giá)
+                    ({product.ratings.length})
                   </Text>
+                </div>
+
+                <div style={{ marginTop: "8px" }}>
+                  <Tag color="blue">{firstVariant?.ram?.capacity}</Tag>
+                  <Tag color="green">
+                    {firstVariant?.storage?.storage_capacity}
+                  </Tag>
+                  <Tag color="purple">Đã bán {product.sold_count}</Tag>
                 </div>
               </Space>
             }

@@ -37,7 +37,10 @@ export class CartService extends BaseService {
       });
       items.push({
         variant_id: item.variant_id,
-        quantity: Math.min(item.quantity, variant?.stock!),
+        quantity: Math.min(
+          item.quantity > 5 ? 5 : item.quantity,
+          variant?.stock!
+        ),
         product_id: variant?.product_id,
         product_name: variant?.product?.product_name,
         image: productImage?.image_url,

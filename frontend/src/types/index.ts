@@ -179,3 +179,21 @@ export interface Ward {
   division_type: string;
   short_codename: string;
 }
+export interface FilterOptions {
+  brands: Brand[];
+  categories: Category[];
+  colors: Color[];
+  storages: Storage[];
+  ram: Ram[];
+  priceRange: PriceRange;
+}
+
+interface PriceRange {
+  min: number;
+  max: number;
+}
+
+interface Ram {
+  ram_id: number;
+  capacity: string;
+}

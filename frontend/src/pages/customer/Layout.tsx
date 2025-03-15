@@ -14,6 +14,7 @@ import {
   Tooltip,
   FloatButton,
   Dropdown,
+  MenuProps,
 } from "antd";
 import {
   ShoppingCartOutlined,
@@ -27,7 +28,6 @@ import {
   SearchOutlined,
   CustomerServiceOutlined,
   LogoutOutlined,
-  UserSwitchOutlined,
 } from "@ant-design/icons";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useCartStore } from "../../store/cartStore";
@@ -42,6 +42,13 @@ const CustomerLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+
+  const [current, setCurrent] = useState("mail");
+
+  const onClick: MenuProps["onClick"] = (e) => {
+    console.log("click ", e);
+    setCurrent(e.key);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -61,13 +68,13 @@ const CustomerLayout: React.FC = () => {
       key: "1",
       label: "Thông tin tài khoản",
       icon: <UserOutlined />,
-      onClick: () => navigate("/profile"),
+      onClick: () => navigate("/profile?tab=1"),
     },
     {
       key: "2",
       label: "Đơn hàng của tôi",
       icon: <ShoppingCartOutlined />,
-      onClick: () => navigate("/orders"),
+      onClick: () => navigate("/profile?tab=2"),
     },
     {
       key: "3",
@@ -84,51 +91,18 @@ const CustomerLayout: React.FC = () => {
     {
       key: "home",
       label: "Trang chủ",
+
       onClick: () => navigate("/"),
     },
     {
-      key: "phones",
+      key: "dtdd",
       label: "Điện thoại",
       onClick: () => navigate("/dtdd"),
-      children: [
-        {
-          key: "apple",
-          label: "Apple",
-          onClick: () => navigate("/dtdd/apple"),
-        },
-        {
-          key: "samsung",
-          label: "Samsung",
-          onClick: () => navigate("/dtdd/samsung"),
-        },
-        {
-          key: "xiaomi",
-          label: "Xiaomi",
-          onClick: () => navigate("/dtdd/xiaomi"),
-        },
-      ],
     },
     {
       key: "accessories",
       label: "Phụ kiện",
-      onClick: () => navigate("/accessories"),
-      children: [
-        {
-          key: "cases",
-          label: "Ốp lưng",
-          onClick: () => navigate("/accessories/cases"),
-        },
-        {
-          key: "chargers",
-          label: "Sạc & Cáp",
-          onClick: () => navigate("/accessories/chargers"),
-        },
-        {
-          key: "headphones",
-          label: "Tai nghe",
-          onClick: () => navigate("/accessories/headphones"),
-        },
-      ],
+      onClick: () => navigate("/phukien"),
     },
     {
       key: "news",
@@ -166,7 +140,7 @@ const CustomerLayout: React.FC = () => {
                   alt="Mobile Zone Logo"
                   className="logo-image"
                 />
-                <Title level={3} className="logo-text">
+                <Title level={4} className="logo-text">
                   Mobile Zone
                 </Title>
               </Link>
@@ -175,11 +149,8 @@ const CustomerLayout: React.FC = () => {
               mode="horizontal"
               items={menuItems}
               className="desktop-menu"
-              selectedKeys={[
-                location.pathname === "/"
-                  ? "home"
-                  : location.pathname.split("/")[1],
-              ]}
+              selectedKeys={[current]}
+              onClick={onClick}
             />
 
             <div className="header-actions">
@@ -423,6 +394,7 @@ const CustomerLayout: React.FC = () => {
           .logo-section {
             display: flex;
             align-items: center;
+            justify-content: center;
           }
           
           .logo-link {

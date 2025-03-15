@@ -8,6 +8,7 @@ import Home from "../pages/customer/Home";
 import Login from "../pages/customer/login/Login";
 import ProfilePage from "../pages/customer/profile/Index";
 import CheckoutResult from "../pages/customer/checkout/CheckoutResult";
+import OrderDetail from "../pages/customer/order/OrderDetail";
 const CustomerRouter = () => {
   return (
     <Routes>
@@ -21,7 +22,8 @@ const CustomerRouter = () => {
         <Route path="checkout" element={<CheckOut />} />
         <Route path="login" element={<Login />} />
         <Route path="profile" element={<ProfilePage />} />
-        <Route path="checkout/vnpay-return" element={<CheckoutResult />} />
+        <Route path="checkout/result" element={<CheckoutResult />} />
+        <Route path="order/:order_id" element={<OrderDetail />} />
       </Route>
     </Routes>
   );

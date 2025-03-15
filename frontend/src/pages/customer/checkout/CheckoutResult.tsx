@@ -13,47 +13,54 @@ const CheckoutResult = () => {
   const [status, setStatus] = useState<"success" | "error">("success");
   const [message, setMessage] = useState("");
 
+  const type = searchParams.get("type");
+
+  const { clearOrder, removeItem, order } = useCartStore();
+
   useEffect(() => {
-    // Check VNPay payment result
-    const vnp_ResponseCode = searchParams.get("vnp_ResponseCode");
+    if (type === "vnpay") {
+      // Check VNPay payment result
+      const vnp_ResponseCode = searchParams.get("vnp_ResponseCode");
 
-    const vnp_TransactionStatus = searchParams.get("vnp_TransactionStatus");
+      const vnp_TransactionStatus = searchParams.get("vnp_TransactionStatus");
 
-    const vnp_TxnRef = searchParams.get("vnp_TxnRef");
+      const vnp_TxnRef = searchParams.get("vnp_TxnRef");
 
-    const { clearOrder, removeItem, order } = useCartStore();
+      if (vnp_ResponseCode === "00" && vnp_TransactionStatus === "00") {
+        setStatus("success");
+        setMessage("Thanh toán thành công qua VNPay!");
+        clearOrder();
+        order?.items.forEach((item) => {
+          removeItem(item.variant_id);
+        });
+      } else if (vnp_ResponseCode) {
+        setStatus("error");
+        setMessage("Thanh toán qua VNPay thất bại!");
+      }
 
-    if (vnp_ResponseCode === "00" && vnp_TransactionStatus === "00") {
-      setStatus("success");
-      setMessage("Thanh toán thành công qua VNPay!");
-      clearOrder();
-      order?.items.forEach((item) => {
-        removeItem(item.variant_id);
-      });
-    } else if (vnp_ResponseCode) {
-      setStatus("error");
-      setMessage("Thanh toán qua VNPay thất bại!");
-    }
-
-    // Check normal order success
-    const orderSuccess = searchParams.get("success");
-    if (orderSuccess === "true") {
+      // Check normal order success
+      const orderSuccess = searchParams.get("success");
+      if (orderSuccess === "true") {
+        setStatus("success");
+        setMessage("Đặt hàng thành công!");
+      } else if (orderSuccess === "false") {
+        axios.patch(
+          `http://localhost:8080/api/v1/orders/${vnp_TxnRef}/status`,
+          {
+            status: "da_huy",
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setStatus("error");
+        setMessage("Đặt hàng thất bại!");
+      }
+    } else if (type === "normal") {
       setStatus("success");
       setMessage("Đặt hàng thành công!");
-    } else if (orderSuccess === "false") {
-      axios.patch(
-        `http://localhost:8080/api/v1/orders/${vnp_TxnRef}/status`,
-        {
-          status: "da_huy",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      setStatus("error");
-      setMessage("Đặt hàng thất bại!");
     }
   }, [searchParams]);
 
@@ -95,7 +102,7 @@ const CheckoutResult = () => {
             type="primary"
             key="console"
             size="large"
-            onClick={() => navigate("/orders")}
+            onClick={() => navigate("/profile?tab=2")}
           >
             Xem Đơn Hàng
           </Button>,

@@ -162,6 +162,10 @@ const AddProductVariants = () => {
     }
   };
 
+  const handleDeleteVariant = async (variantId: number) => {
+    setVariants((prev) => prev.filter((v) => v.variant_id !== variantId));
+  };
+
   const handleVariantChange = (
     variantId: number,
     field: string,
@@ -230,13 +234,12 @@ const AddProductVariants = () => {
           help={price <= 0 ? "Giá phải lớn hơn 0" : ""}
         >
           <InputNumber
-            disabled
             value={price}
             onChange={(value) =>
               handleVariantChange(record.variant_id, "original_price", value)
             }
             formatter={(value) =>
-              `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              `${value} đ`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
             }
             style={{ width: "100%" }}
           />
@@ -253,13 +256,12 @@ const AddProductVariants = () => {
           help={price <= 0 ? "Giá phải lớn hơn 0" : ""}
         >
           <InputNumber
-            disabled
             value={price}
             onChange={(value) =>
               handleVariantChange(record.variant_id, "sale_price", value)
             }
             formatter={(value) =>
-              `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              `${value} đ`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
             }
             style={{ width: "100%" }}
           />
@@ -276,13 +278,12 @@ const AddProductVariants = () => {
           help={price > record.sale_price ? "Giá KM phải nhỏ hơn giá bán" : ""}
         >
           <InputNumber
-            disabled
             value={price}
             onChange={(value) =>
               handleVariantChange(record.variant_id, "promotional_price", value)
             }
             formatter={(value) =>
-              `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              `${value} đ`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
             }
             style={{ width: "100%" }}
           />
@@ -295,7 +296,6 @@ const AddProductVariants = () => {
       render: (_: any, record: ProductVariant) => (
         <Form.Item>
           <DatePicker.RangePicker
-            disabled
             value={[
               record.promotion_start ? dayjs(record.promotion_start) : null,
               record.promotion_end ? dayjs(record.promotion_end) : null,
@@ -333,6 +333,20 @@ const AddProductVariants = () => {
             min={0}
             style={{ width: "100%" }}
           />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Hành động",
+      key: "action",
+      render: (_: any, record: ProductVariant) => (
+        <Form.Item>
+          <Button
+            type="link"
+            onClick={() => handleDeleteVariant(record.variant_id)}
+          >
+            Xóa
+          </Button>
         </Form.Item>
       ),
     },
