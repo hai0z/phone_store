@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import AdminLayout from "../pages/admin/Layout";
 import Dashboard from "../pages/admin/DashBoard";
 import AddProduct from "../pages/admin/product/add/AddProduct";
-import TechnicalSpecsDemo from "../pages/demo/TechnicalSpecsDemo";
 import ProductList from "../pages/admin/product/Index";
 import BrandList from "../pages/admin/brand/Index";
 import AddBrand from "../pages/admin/brand/AddBrand";
@@ -13,6 +12,9 @@ import ProductEdit from "../pages/admin/product/edit";
 import CategoryList from "../pages/admin/category/Index";
 import AddCategory from "../pages/admin/category/AddCategory";
 import EditCategory from "../pages/admin/category/EditCategory";
+import OrderList from "../pages/admin/order/Index";
+import OrderDetail from "../pages/admin/order/Detail";
+import OrderEdit from "../pages/admin/order/Edit";
 const AdminRouter = () => {
   return (
     <Routes>
@@ -40,6 +42,11 @@ const AdminRouter = () => {
           <Route path="/admin/categories" element={<CategoryList />} />
           <Route path="/admin/categories/add" element={<AddCategory />} />
           <Route path="/admin/categories/edit/:id" element={<EditCategory />} />
+        </Route>
+        <Route>
+          <Route path="/admin/orders" element={<OrderList />} />
+          <Route path="/admin/orders/:id" element={<OrderDetail />} />
+          <Route path="/admin/orders/edit/:id" element={<OrderEdit />} />
         </Route>
       </Route>
     </Routes>

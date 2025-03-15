@@ -3,7 +3,6 @@ import { OrderService } from "../services/order.service";
 import { ProductVariantService } from "../services/product-variant.service";
 import { VoucherService } from "../services/voucher.service";
 import { PrismaClient } from "@prisma/client";
-
 class OrderController {
   private orderService: OrderService;
   private variantService: ProductVariantService;
@@ -16,6 +15,14 @@ class OrderController {
     this.prisma = new PrismaClient();
   }
 
+  getAllOrders = async (req: Request, res: Response) => {
+    try {
+      const orders = await this.orderService.getAllOrders();
+      res.json(orders);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  };
   createOrder = async (req: Request, res: Response) => {
     try {
       const { orderData, orderDetails, voucherId } = req.body;

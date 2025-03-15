@@ -11,6 +11,8 @@ router.post("/customer/login", authController.customerLogin);
 // Customer registration route
 router.post("/customer/register", authController.customerRegister);
 
+router.post("/customer/forgot-password", authController.forgotPassword);
+router.post("/customer/reset-password", authController.resetPassword);
 // Token validation route
 router.get("/validate", authController.validateToken);
 

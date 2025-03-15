@@ -9,6 +9,43 @@ import {
 } from "vnpay";
 
 export class OrderService extends BaseService {
+  async getAllOrders() {
+    return this.prisma.orders.findMany({
+      orderBy: {
+        order_date: "desc",
+      },
+      include: {
+        customer: {
+          select: {
+            customer_id: true,
+            full_name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        voucher: true,
+        orderDetails: {
+          include: {
+            variant: {
+              include: {
+                product: {
+                  select: {
+                    product_id: true,
+                    product_name: true,
+                    images: true,
+                  },
+                },
+                ram: true,
+                storage: true,
+                color: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   async createOrder(
     orderData: Omit<Orders, "order_id">,
     orderDetails: Omit<OrderDetails, "order_detail_id" | "order_id">[]

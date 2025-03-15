@@ -126,6 +126,7 @@ const ProfilePage: React.FC = () => {
       title: "Mã đơn hàng",
       dataIndex: "order_id",
       key: "order_id",
+      render: (value: number) => `#${value}`,
     },
     {
       title: "Tên đơn hàng",

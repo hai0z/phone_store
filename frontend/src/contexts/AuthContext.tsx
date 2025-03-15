@@ -18,7 +18,15 @@ interface AuthContextType {
     emailOrPhone: string,
     password: string
   ) => Promise<void>;
+  register: (
+    full_name: string,
+    email: string,
+    phone: string,
+    password: string
+  ) => Promise<any>;
   logout: () => void;
+  forgotPassword: (email: string) => Promise<any>;
+  resetPassword: (token: string, password: string) => Promise<any>;
   isAuthenticated: boolean;
 }
 
@@ -109,9 +117,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setToken(data.token);
       localStorage.setItem("token", data.token);
     } catch (error: any) {
-      throw error;
+      throw new Error(error.message || "Đăng nhập thất bại");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const register = async (
+    full_name: string,
+    email: string,
+    phone: string,
+    password: string
+  ) => {
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/v1/auth/customer/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ full_name, email, phone, password }),
+        }
+      );
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      throw new Error(error.message || "Đăng ký thất bại");
+    }
+  };
+
+  const forgotPassword = async (email: string) => {
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/v1/auth/customer/forgot-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      throw new Error(error.message || "Gửi email khôi phục mật khẩu thất bại");
+    }
+  };
+
+  const resetPassword = async (token: string, password: string) => {
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/v1/auth/customer/reset-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token, password }),
+        }
+      );
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      throw new Error(error.message || "Đặt lại mật khẩu thất bại");
     }
   };
 
@@ -126,7 +196,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     token,
     loading,
     login,
+    register,
     logout,
+    forgotPassword,
+    resetPassword,
     isAuthenticated: !!token,
   };
 

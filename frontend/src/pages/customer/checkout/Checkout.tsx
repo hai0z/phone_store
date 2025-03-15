@@ -139,7 +139,6 @@ const Checkout: React.FC = () => {
 
   const handleSubmit = async (values: CheckoutFormData) => {
     const orderId = Math.floor(Math.random() * 1000000);
-
     const orderData = {
       order_id: orderId,
       customer_id: user?.customer_id,
@@ -150,7 +149,7 @@ const Checkout: React.FC = () => {
       note: values.note,
       order_date: new Date(),
       total_amount: totalPrice,
-      status: "cho_xac_nhan",
+      status: values.paymentMethod === "cod" ? "cho_xac_nhan" : "da_huy",
     };
     const orderDetails = cartItems.map((item) => ({
       variant_id: item.variant_id,
@@ -188,13 +187,18 @@ const Checkout: React.FC = () => {
           window.location.href = vnPayUrl.data.paymentUrl;
         });
       } else {
-        await wait(1500).then(() => {
-          clearOrder();
-          cartItems.forEach((item) => {
-            removeItem(item.variant_id);
+        await axios
+          .post("http://localhost:8080/api/v1/email/send-order-confirmation", {
+            orderNumber: orderId,
+            to: user?.email,
+          })
+          .then(() => {
+            clearOrder();
+            cartItems.forEach((item) => {
+              removeItem(item.variant_id);
+            });
+            navigate("/checkout/result?type=normal");
           });
-          navigate("/checkout/result?type=normal");
-        });
       }
       await wait(1500).then(() => {
         setOrderLoading(false);

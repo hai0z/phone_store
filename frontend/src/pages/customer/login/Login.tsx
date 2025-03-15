@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Card, Typography, message } from "antd";
+import { Form, Input, Button, Card, Typography, message, Modal } from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
 
 const { Title, Text } = Typography;
@@ -15,6 +15,8 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const { login } = useAuth();
 
@@ -24,11 +26,16 @@ const Login: React.FC = () => {
       await login("customer", values.username, values.password);
       message.success("Đăng nhập thành công!");
       navigate("/"); // Redirect to home page after successful login
-    } catch (error) {
-      message.error("Đăng nhập thất bại. Vui lòng thử lại!");
+    } catch (error: any) {
+      setErrorMessage(error.message || "Đăng nhập thất bại. Vui lòng thử lại!");
+      setModalVisible(true);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
   };
 
   return (
@@ -109,13 +116,28 @@ const Login: React.FC = () => {
 
           <div style={{ textAlign: "center" }}>
             <Text type="secondary">
-              Chưa có tài khoản? <a href="/register">Đăng ký ngay</a>
+              Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
             </Text>
             <br />
-            <a href="/forgot-password">Quên mật khẩu?</a>
+            <Link to="/forgot-password">Quên mật khẩu?</Link>
           </div>
         </Form>
       </Card>
+
+      <Modal
+        title="Đăng nhập thất bại"
+        open={modalVisible}
+        onOk={handleModalClose}
+        onCancel={handleModalClose}
+        centered
+        footer={[
+          <Button key="ok" type="primary" onClick={handleModalClose}>
+            Đóng
+          </Button>,
+        ]}
+      >
+        <p>{errorMessage}</p>
+      </Modal>
     </div>
   );
 };

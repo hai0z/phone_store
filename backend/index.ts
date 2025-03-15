@@ -12,6 +12,7 @@ import AdminHomeRoute from "./src/routes/admin-home.router";
 import CartRoute from "./src/routes/cart.routes";
 import AuthRoute from "./src/routes/auth.routes";
 import OrderRoute from "./src/routes/order.routes";
+import EmmailRoute from "./src/routes/email.routes";
 import path from "path";
 
 const app = express();
@@ -35,6 +36,7 @@ app.use("/api/v1/admin", AdminHomeRoute);
 app.use("/api/v1/cart", CartRoute);
 app.use("/api/v1/auth", AuthRoute);
 app.use("/api/v1/orders", OrderRoute);
+app.use("/api/v1/email", EmmailRoute);
 
 app.listen(port, () => {
   console.log(`backendd listening at http://localhost:${port}`);

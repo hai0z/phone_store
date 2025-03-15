@@ -26,7 +26,7 @@ export class AuthService extends BaseService {
     });
 
     if (existingCustomer) {
-      throw new Error("Email or phone number already registered");
+      throw new Error("Email hoặc số điện thoại đã được đăng ký");
     }
 
     // Hash password
@@ -87,8 +87,10 @@ export class AuthService extends BaseService {
     };
   }
 
-  private generateToken(id: number, role: string): string {
-    return jwt.sign({ id, role }, this.JWT_SECRET, { expiresIn: "7d" });
+  private generateToken(id: number, role: string, expiresIn?: any): string {
+    return jwt.sign({ id, role }, this.JWT_SECRET, {
+      expiresIn: expiresIn || "7d",
+    });
   }
 
   async validateToken(token: string) {
@@ -116,5 +118,36 @@ export class AuthService extends BaseService {
     } catch (error) {
       throw new Error("Invalid token");
     }
+  }
+
+  async forgotPassword(email: string) {
+    const customer = await this.prisma.customers.findFirst({
+      where: { email },
+    });
+    if (!customer) throw new Error("Địa chỉ email không tồn tại");
+    const token = this.generateToken(customer.customer_id, "customer", "1h");
+    return {
+      message: "Đã gửi email khôi phục mật khẩu",
+      token,
+    };
+  }
+
+  async resetPassword(token: string, password: string) {
+    const decoded = jwt.verify(token, this.JWT_SECRET) as {
+      id: number;
+      role: string;
+    };
+    const customer = await this.prisma.customers.findFirst({
+      where: { customer_id: decoded.id },
+    });
+    if (!customer) throw new Error("Không tìm thấy khách hàng");
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await this.prisma.customers.update({
+      where: { customer_id: decoded.id },
+      data: { password: hashedPassword },
+    });
+    return {
+      message: "Đã đặt lại mật khẩu",
+    };
   }
 }

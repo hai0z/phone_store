@@ -9,6 +9,9 @@ import Login from "../pages/customer/login/Login";
 import ProfilePage from "../pages/customer/profile/Index";
 import CheckoutResult from "../pages/customer/checkout/CheckoutResult";
 import OrderDetail from "../pages/customer/order/OrderDetail";
+import Register from "../pages/customer/login/Register";
+import ForgotPassword from "../pages/customer/login/ForgotPassword";
+import ResetPassword from "../pages/customer/login/ResetPassword";
 const CustomerRouter = () => {
   return (
     <Routes>
@@ -21,6 +24,9 @@ const CustomerRouter = () => {
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<CheckOut />} />
         <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
+        <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route path="reset-password" element={<ResetPassword />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="checkout/result" element={<CheckoutResult />} />
         <Route path="order/:order_id" element={<OrderDetail />} />

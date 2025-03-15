@@ -1,11 +1,12 @@
-import { Request, Response } from "express";
+import e, { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
-
+import { EmailService } from "../services/email.service";
 export class AuthController {
   private authService: AuthService;
-
+  private emailService: EmailService;
   constructor() {
     this.authService = new AuthService();
+    this.emailService = new EmailService();
   }
 
   adminLogin = async (req: Request, res: Response) => {
@@ -45,7 +46,9 @@ export class AuthController {
       return res.status(200).json(result);
     } catch (error: any) {
       if (error.message === "Invalid credentials") {
-        return res.status(401).json({ message: error.message });
+        return res
+          .status(401)
+          .json({ message: "Tài khoản hoặc mật khẩu không chính xác" });
       }
       return res.status(500).json({ message: "Internal server error" });
     }
@@ -60,21 +63,20 @@ export class AuthController {
           message: "Full name, email, phone, and password are required",
         });
       }
-
       const result = await this.authService.customerRegister({
         full_name,
         email,
         phone,
         password,
       });
-      return res.status(200).json(result);
+      this.emailService.sendWelcomeEmail(email, full_name);
+      return res.status(200).json({
+        message: "Đăng kí thành công",
+        data: result,
+        success: true,
+      });
     } catch (error: any) {
-      if (error.message === "Email or phone number already registered") {
-        return res.status(409).json({ message: error.message });
-      }
-      return res
-        .status(500)
-        .json({ message: "Internal server error" + error.message });
+      return res.status(500).json({ message: error.message, success: false });
     }
   };
 
@@ -93,6 +95,35 @@ export class AuthController {
         return res.status(401).json({ message: "Invalid or expired token" });
       }
       return res.status(500).json({ message: "Internal server error" });
+    }
+  };
+
+  forgotPassword = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      const result = await this.authService.forgotPassword(email);
+      this.emailService.sendPasswordReset(email, result.token);
+      return res.status(200).json({
+        message: "Email khôi phục mật khẩu đã được gửi",
+        data: result,
+        success: true,
+      });
+    } catch (error: any) {
+      return res.status(500).json({ message: error.message, success: false });
+    }
+  };
+
+  resetPassword = async (req: Request, res: Response) => {
+    try {
+      const { token, password } = req.body;
+      const result = await this.authService.resetPassword(token, password);
+      return res.status(200).json({
+        message: "Đã đặt lại mật khẩu",
+        data: result,
+        success: true,
+      });
+    } catch (error: any) {
+      return res.status(500).json({ message: error.message, success: false });
     }
   };
 }

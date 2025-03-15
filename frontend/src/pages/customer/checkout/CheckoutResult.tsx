@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Result, Button, Typography, Space } from "antd";
+import { Result, Button, Typography, Space, Spin, Layout } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { SmileOutlined, FrownOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useCartStore } from "../../../store/cartStore";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const { Title, Text } = Typography;
 
@@ -12,10 +13,22 @@ const CheckoutResult = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState<"success" | "error">("success");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
 
+  const { user } = useAuth();
   const type = searchParams.get("type");
 
   const { clearOrder, removeItem, order } = useCartStore();
+
+  const handleResult = async (orderId: number) => {
+    return await axios.post(
+      "http://localhost:8080/api/v1/email/send-order-confirmation",
+      {
+        orderNumber: orderId,
+        to: user?.email,
+      }
+    );
+  };
 
   useEffect(() => {
     if (type === "vnpay") {
@@ -27,15 +40,42 @@ const CheckoutResult = () => {
       const vnp_TxnRef = searchParams.get("vnp_TxnRef");
 
       if (vnp_ResponseCode === "00" && vnp_TransactionStatus === "00") {
-        setStatus("success");
-        setMessage("Thanh toán thành công qua VNPay!");
-        clearOrder();
-        order?.items.forEach((item) => {
-          removeItem(item.variant_id);
+        handleResult(Number(vnp_TxnRef)).then(() => {
+          axios
+            .patch(
+              `http://localhost:8080/api/v1/orders/${vnp_TxnRef}/status`,
+              { status: "cho_xac_nhan" },
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            )
+            .then(() => {
+              setStatus("success");
+              setMessage("Thanh toán thành công qua VNPay!");
+              clearOrder();
+              order?.items.forEach((item) => {
+                removeItem(item.variant_id);
+              });
+              setLoading(false);
+            });
         });
       } else if (vnp_ResponseCode) {
-        setStatus("error");
-        setMessage("Thanh toán qua VNPay thất bại!");
+        axios
+          .patch(
+            `http://localhost:8080/api/v1/orders/${vnp_TxnRef}/status`,
+            { status: "da_huy" },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          )
+          .then(() => {
+            setStatus("error");
+            setMessage("Thanh toán qua VNPay thất bại!");
+          });
       }
 
       // Check normal order success
@@ -44,26 +84,30 @@ const CheckoutResult = () => {
         setStatus("success");
         setMessage("Đặt hàng thành công!");
       } else if (orderSuccess === "false") {
-        axios.patch(
-          `http://localhost:8080/api/v1/orders/${vnp_TxnRef}/status`,
-          {
-            status: "da_huy",
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
         setStatus("error");
         setMessage("Đặt hàng thất bại!");
       }
     } else if (type === "normal") {
       setStatus("success");
       setMessage("Đặt hàng thành công!");
+      setLoading(false);
     }
-  }, [searchParams]);
+  }, [searchParams, user]);
 
+  if (loading) {
+    return (
+      <Layout
+        style={{
+          minHeight: "80vh",
+          justifyContent: "center",
+          alignItems: "center",
+          display: "flex",
+        }}
+      >
+        <Spin size="large" />
+      </Layout>
+    );
+  }
   return (
     <div
       style={{

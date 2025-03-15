@@ -160,8 +160,8 @@ model Orders {
   paymentMethod String // VD: Thanh toán khi nhận hàng, Thanh toán online
   note          String? // Ghi chú cho đơn hàng
   address       String // Địa chỉ giao hàng
-  customer      Customers      @relation(fields: [customer_id], references: [customer_id])
-  voucher       Vouchers?      @relation(fields: [voucher_id], references: [voucher_id])
+  customer      Customers      @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction)
+  voucher       Vouchers?      @relation(fields: [voucher_id], references: [voucher_id], onDelete: NoAction)
   orderDetails  OrderDetails[]
 }
 
@@ -173,8 +173,8 @@ model OrderDetails {
   quantity        Int
   price           Int // Giá tại thời điểm mua
   image_url       String?
-  order           Orders          @relation(fields: [order_id], references: [order_id])
-  variant         ProductVariants @relation(fields: [variant_id], references: [variant_id])
+  order           Orders          @relation(fields: [order_id], references: [order_id], onDelete: Cascade)
+  variant         ProductVariants @relation(fields: [variant_id], references: [variant_id], onDelete: NoAction)
 }
 
 // Model Ratings (Đánh giá)
@@ -184,7 +184,7 @@ model Ratings {
   customer_id Int
   rating      Int // Điểm đánh giá (1-5)
   created_at  DateTime  @default(now()) // Ngày đánh giá
-  product     Products  @relation(fields: [product_id], references: [product_id])
-  customer    Customers @relation(fields: [customer_id], references: [customer_id])
+  product     Products  @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+  customer    Customers @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade)
   content     String? // Nội dung đánh giá
 }
