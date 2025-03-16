@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Layout,
-  Card,
   Row,
   Col,
   Typography,
@@ -231,6 +230,166 @@ const PhoneList: React.FC = () => {
     />
   );
 
+  const handleFilterChange = () => {
+    const params = new URLSearchParams();
+
+    if (selectedBrands.length > 0) {
+      params.set("brandIds", selectedBrands.join(","));
+    }
+    if (selectedStorages.length > 0) {
+      params.set("storages", selectedStorages.join(","));
+    }
+    if (selectedRams.length > 0) {
+      params.set("ram", selectedRams.join(","));
+    }
+    if (priceRange[0] > 0 || priceRange[1] < 2000) {
+      params.set("minPrice", priceRange[0].toString());
+      params.set("maxPrice", priceRange[1].toString());
+    }
+
+    setSearchParams(params);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    const params = new URLSearchParams(searchParams);
+    params.set("page", page.toString());
+    setSearchParams(params);
+  };
+
+  const handleQuickFilter = (type: string) => {
+    const params = new URLSearchParams();
+    switch (type) {
+      case "promotion":
+        params.set("hasPromotion", "true");
+        break;
+      case "discount":
+        params.set("hasDiscount", "true");
+        break;
+      case "rating":
+        params.set("minRating", "5");
+        break;
+      case "screen":
+        params.set("minScreenSize", "6.5");
+        break;
+      case "ram":
+        params.set("minRam", "8");
+        break;
+    }
+    setSearchParams(params);
+    setCurrentPage(1);
+  };
+
+  const renderFilterDrawer = () => (
+    <Drawer
+      title={
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <FilterOutlined style={{ marginRight: "8px" }} />
+          Bộ lọc sản phẩm
+        </div>
+      }
+      placement="right"
+      onClose={() => setFilterDrawerVisible(false)}
+      open={filterDrawerVisible}
+      width={320}
+    >
+      <Collapse defaultActiveKey={["1", "2", "3"]} bordered={false}>
+        <Panel header="Thương hiệu" key="1">
+          <Checkbox.Group
+            value={selectedBrands}
+            onChange={(values) => setSelectedBrands(values as string[])}
+          >
+            <Space direction="vertical">
+              {filterOptions?.brands.map((brand) => (
+                <Checkbox key={brand.brand_id} value={brand.brand_id}>
+                  {brand.brand_name}
+                </Checkbox>
+              ))}
+            </Space>
+          </Checkbox.Group>
+        </Panel>
+
+        <Panel header="Bộ nhớ trong" key="2">
+          <Checkbox.Group
+            value={selectedStorages}
+            onChange={(values) => setSelectedStorages(values as string[])}
+          >
+            <Space direction="vertical">
+              {filterOptions?.storages.map((storage) => (
+                <Checkbox key={storage.storage_id} value={storage.storage_id}>
+                  {storage.storage_capacity}
+                </Checkbox>
+              ))}
+            </Space>
+          </Checkbox.Group>
+        </Panel>
+
+        <Panel header="RAM" key="3">
+          <Checkbox.Group
+            value={selectedRams}
+            onChange={(values) => setSelectedRams(values as string[])}
+          >
+            <Space direction="vertical">
+              {filterOptions?.ram.map((ram) => (
+                <Checkbox key={ram.ram_id} value={ram.ram_id}>
+                  {ram.capacity}
+                </Checkbox>
+              ))}
+            </Space>
+          </Checkbox.Group>
+        </Panel>
+
+        <Panel header="Khoảng giá" key="4">
+          <Slider
+            range
+            min={0}
+            max={2000}
+            value={priceRange}
+            onChange={(value) => setPriceRange(value as [number, number])}
+          />
+          <Flex justify="space-between">
+            <InputNumber
+              min={0}
+              max={priceRange[1]}
+              value={priceRange[0]}
+              onChange={(value) => setPriceRange([value || 0, priceRange[1]])}
+              formatter={(value) => `$ ${value}`}
+            />
+            <InputNumber
+              min={priceRange[0]}
+              max={2000}
+              value={priceRange[1]}
+              onChange={(value) =>
+                setPriceRange([priceRange[0], value || 2000])
+              }
+              formatter={(value) => `$ ${value}`}
+            />
+          </Flex>
+        </Panel>
+      </Collapse>
+
+      <div style={{ marginTop: "24px" }}>
+        <Button type="primary" block onClick={handleFilterChange}>
+          Áp dụng bộ lọc
+        </Button>
+        <Button
+          block
+          onClick={() => {
+            setSelectedBrands([]);
+            setSelectedStorages([]);
+            setSelectedRams([]);
+            setPriceRange([0, 2000]);
+            setSearchParams({});
+          }}
+          style={{ marginTop: "12px" }}
+        >
+          Đặt lại
+        </Button>
+      </div>
+    </Drawer>
+  );
+
   return (
     <Layout.Content style={{ padding: "24px" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -305,19 +464,43 @@ const PhoneList: React.FC = () => {
         {/* Quick Filter Tags */}
         <div style={{ marginBottom: "24px" }}>
           <Space wrap size="middle">
-            <Button type="default" icon={<ThunderboltOutlined />} shape="round">
+            <Button
+              type="default"
+              icon={<ThunderboltOutlined />}
+              shape="round"
+              onClick={() => handleQuickFilter("promotion")}
+            >
               Khuyến mãi hot
             </Button>
-            <Button type="default" icon={<PercentageOutlined />} shape="round">
+            <Button
+              type="default"
+              icon={<PercentageOutlined />}
+              shape="round"
+              onClick={() => handleQuickFilter("discount")}
+            >
               Giảm giá sốc
             </Button>
-            <Button type="default" icon={<StarOutlined />} shape="round">
+            <Button
+              type="default"
+              icon={<StarOutlined />}
+              shape="round"
+              onClick={() => handleQuickFilter("rating")}
+            >
               Đánh giá 5 sao
             </Button>
-            <Button type="default" icon={<MobileOutlined />} shape="round">
+            <Button
+              type="default"
+              icon={<MobileOutlined />}
+              shape="round"
+              onClick={() => handleQuickFilter("screen")}
+            >
               Màn hình lớn
             </Button>
-            <Button type="default" shape="round">
+            <Button
+              type="default"
+              shape="round"
+              onClick={() => handleQuickFilter("ram")}
+            >
               RAM 8GB+
             </Button>
           </Space>
@@ -420,159 +603,16 @@ const PhoneList: React.FC = () => {
             <Flex justify="center" align="center" style={{ marginTop: "32px" }}>
               <Pagination
                 current={currentPage}
-                onChange={setCurrentPage}
+                onChange={handlePageChange}
                 total={products?.pagination.total}
+                pageSize={products?.pagination.limit || 12}
+                showSizeChanger={false}
               />
             </Flex>
           </>
         )}
         {/* Filter Drawer */}
-        <Drawer
-          title={
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <FilterOutlined style={{ marginRight: "8px" }} />
-              <span>Bộ lọc nâng cao</span>
-            </div>
-          }
-          placement="right"
-          onClose={() => setFilterDrawerVisible(false)}
-          open={filterDrawerVisible}
-          width={480}
-          footer={
-            <div style={{ textAlign: "right" }}>
-              <Button
-                style={{ marginRight: 8 }}
-                onClick={() => {
-                  setSelectedBrands([]);
-                  setSelectedStorages([]);
-                  setSelectedRams([]);
-                  setPriceRange([0, 2000]);
-                }}
-              >
-                Đặt lại
-              </Button>
-              <Button
-                type="primary"
-                onClick={() => setFilterDrawerVisible(false)}
-              >
-                Áp dụng
-              </Button>
-            </div>
-          }
-        >
-          <Collapse
-            defaultActiveKey={["1", "2", "3", "4"]}
-            expandIconPosition="end"
-            bordered={false}
-            style={{ background: "transparent" }}
-          >
-            <Panel
-              header={
-                <Title level={5} style={{ margin: 0 }}>
-                  Hãng sản xuất
-                </Title>
-              }
-              key="1"
-            >
-              <Checkbox.Group
-                options={filterOptions?.brands.map((brand) => ({
-                  label: brand.brand_name,
-                  value: brand.brand_id.toString(),
-                }))}
-                value={selectedBrands}
-                onChange={(values) => setSelectedBrands(values as string[])}
-                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-              />
-            </Panel>
-
-            <Panel
-              header={
-                <Title level={5} style={{ margin: 0 }}>
-                  Mức giá
-                </Title>
-              }
-              key="2"
-            >
-              <Slider
-                range
-                min={filterOptions?.priceRange.min}
-                max={filterOptions?.priceRange.max}
-                value={priceRange}
-                step={100_000}
-                tooltip={{ formatter: null }}
-                onChange={(values) => setPriceRange(values as [number, number])}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: "16px",
-                }}
-              >
-                <InputNumber
-                  addonBefore="đ"
-                  value={priceRange[0]}
-                  onChange={(value) => {
-                    setPriceRange([value!, priceRange[1]]);
-                  }}
-                  style={{ width: "45%" }}
-                  formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                  }
-                />
-                <InputNumber
-                  addonBefore="đ"
-                  value={priceRange[1]}
-                  onChange={(value) => {
-                    setPriceRange([priceRange[0], value!]);
-                  }}
-                  style={{ width: "45%" }}
-                  formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                  }
-                />
-              </div>
-            </Panel>
-
-            <Panel
-              header={
-                <Title level={5} style={{ margin: 0 }}>
-                  Bộ nhớ trong
-                </Title>
-              }
-              key="3"
-            >
-              <Checkbox.Group
-                options={filterOptions?.storages.map((storage) => ({
-                  label: storage.storage_capacity,
-                  value: storage.storage_id.toString(),
-                }))}
-                value={selectedStorages}
-                onChange={(values) => setSelectedStorages(values as string[])}
-                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-              />
-            </Panel>
-
-            <Panel
-              header={
-                <Title level={5} style={{ margin: 0 }}>
-                  RAM
-                </Title>
-              }
-              key="4"
-            >
-              <Checkbox.Group
-                options={filterOptions?.ram.map((ram) => ({
-                  label: ram.capacity,
-                  value: ram.ram_id.toString(),
-                }))}
-                value={selectedRams}
-                onChange={(values) => setSelectedRams(values as string[])}
-                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-              />
-            </Panel>
-          </Collapse>
-        </Drawer>
+        {renderFilterDrawer()}
       </div>
     </Layout.Content>
   );

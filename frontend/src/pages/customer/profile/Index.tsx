@@ -162,6 +162,8 @@ const ProfilePage: React.FC = () => {
               ? "blue"
               : status === "da_giao_hang"
               ? "green"
+              : status === "da_xac_nhan"
+              ? "purple"
               : "red"
           }
         >
@@ -171,6 +173,8 @@ const ProfilePage: React.FC = () => {
             ? "Đang giao hàng"
             : status === "da_giao_hang"
             ? "Hoàn thành"
+            : status === "da_xac_nhan"
+            ? "Đã xác nhận"
             : "Đã hủy"}
         </Tag>
       ),

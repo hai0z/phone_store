@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 interface User {
   customer_id?: number;
@@ -46,6 +47,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const pathName = useLocation().pathname;
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+    });
+  }, [pathName]);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");

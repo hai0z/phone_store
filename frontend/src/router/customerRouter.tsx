@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, ScrollRestoration, Router } from "react-router-dom";
 import CustomerLayout from "../pages/customer/Layout";
 import PhoneList from "../pages/customer/PhoneList";
 import Cart from "../pages/customer/cart/Cart";

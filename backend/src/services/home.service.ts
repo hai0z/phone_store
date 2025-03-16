@@ -106,12 +106,20 @@ export class HomeService extends BaseService {
         take: 10,
         orderBy: { order_date: "desc" },
         include: {
-          customer: true,
+          customer: {
+            select: {
+              full_name: true,
+            },
+          },
           orderDetails: {
             include: {
               variant: {
                 include: {
-                  product: true,
+                  product: {
+                    select: {
+                      product_name: true,
+                    },
+                  },
                 },
               },
             },
@@ -122,10 +130,14 @@ export class HomeService extends BaseService {
       // Get low stock products (less than 10 items)
       this.prisma.productVariants.findMany({
         where: {
-          stock: { lt: 10 },
+          stock: { lt: 200 },
         },
         include: {
-          product: true,
+          product: {
+            select: {
+              product_name: true,
+            },
+          },
           color: true,
           storage: true,
         },
@@ -137,7 +149,7 @@ export class HomeService extends BaseService {
           order_date: {
             gte: thirtyDaysAgo,
           },
-          status: "Completed",
+          status: "da_giao_hang",
         },
         _sum: {
           total_amount: true,

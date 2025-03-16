@@ -13,6 +13,7 @@ import {
   Avatar,
   Divider,
   Badge,
+  List,
 } from "antd";
 import {
   DollarCircleOutlined,
@@ -27,12 +28,15 @@ import {
   ProductOutlined,
   DashboardOutlined,
   CalendarOutlined,
+  WarningOutlined,
 } from "@ant-design/icons";
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { theme } from "antd";
+import RevenueAnalytics from "./stats/RevenueAnalytics";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
@@ -44,12 +48,12 @@ interface DashboardData {
     monthlyRevenue: number;
   };
   recentOrders: {
-    id: number;
+    order_id: number;
     order_date: string;
     total_amount: number;
     status: string;
     customer: {
-      name: string;
+      full_name: string;
     };
     orderDetails: Array<{
       variant: {
@@ -107,16 +111,16 @@ const DashBoard: React.FC = () => {
     );
   }
 
-  // const formattedOrders =
-  //   dashboardData?.recentOrders.map((order) => ({
-  //     key: order?.id.toString(),
-  //     orderId: `#ĐH${order.id.toString().padStart(3, "0")}`,
-  //     customer: order.customer.name,
-  //     product: order.orderDetails[0]?.variant.product.product_name || "N/A",
-  //     amount: order.total_amount,
-  //     status: order.status,
-  //     date: new Date(order.order_date).toLocaleDateString("vi-VN"),
-  //   })) || [];
+  const formattedOrders =
+    dashboardData?.recentOrders.map((order) => ({
+      key: order?.order_id.toString(),
+      orderId: `#ĐH${order.order_id.toString().padStart(3, "0")}`,
+      customer: order.customer.full_name,
+      product: order.orderDetails[0]?.variant.product.product_name || "N/A",
+      amount: order.total_amount,
+      status: order.status,
+      date: order.order_date,
+    })) || [];
 
   const orderColumns = [
     {
@@ -159,9 +163,11 @@ const DashBoard: React.FC = () => {
       key: "status",
       render: (status: string) => {
         const statusMap: Record<string, { color: string; text: string }> = {
-          Completed: { color: "success", text: "Hoàn thành" },
-          Processing: { color: "processing", text: "Đang xử lý" },
-          Pending: { color: "warning", text: "Chờ xác nhận" },
+          da_giao_hang: { color: "green", text: "Hoàn thành" },
+          cho_xac_nhan: { color: "gold", text: "Chờ xác nhận" },
+          dang_giao_hang: { color: "blue", text: "Chờ xác nhận" },
+          da_huy: { color: "red", text: "Đã hủy" },
+          da_xac_nhan: { color: "purple", text: "Đã xác nhận" },
         };
         const statusInfo = statusMap[status] || {
           color: "default",
@@ -177,7 +183,7 @@ const DashBoard: React.FC = () => {
       render: (date: string) => (
         <Space>
           <CalendarOutlined style={{ color: token.colorTextSecondary }} />
-          <Text>{date}</Text>
+          <Text>{dayjs(date).format("DD/MM/YYYY HH:mm")}</Text>
         </Space>
       ),
     },
@@ -248,7 +254,7 @@ const DashBoard: React.FC = () => {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable style={{ borderRadius: 8, height: "100%" }}>
+          <Card style={{ borderRadius: 8, height: "100%" }}>
             <Space direction="horizontal" size="large" align="center">
               <div
                 style={{
@@ -268,15 +274,12 @@ const DashBoard: React.FC = () => {
                   suffix="₫"
                   valueStyle={{ color: "#1890ff", fontWeight: "bold" }}
                 />
-                <Text type="success">
-                  <ArrowUpOutlined /> 12% so với tháng trước
-                </Text>
               </div>
             </Space>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable style={{ borderRadius: 8, height: "100%" }}>
+          <Card style={{ borderRadius: 8, height: "100%" }}>
             <Space direction="horizontal" size="large" align="center">
               <div
                 style={{
@@ -295,13 +298,17 @@ const DashBoard: React.FC = () => {
                   value={dashboardData?.recentOrders.length || 0}
                   valueStyle={{ color: "#52c41a", fontWeight: "bold" }}
                 />
-                <Badge status="processing" text="Cập nhật liên tục" />
+                <Badge
+                  status="processing"
+                  color="red"
+                  text="Cập nhật liên tục"
+                />
               </div>
             </Space>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable style={{ borderRadius: 8, height: "100%" }}>
+          <Card style={{ borderRadius: 8, height: "100%" }}>
             <Space direction="horizontal" size="large" align="center">
               <div
                 style={{
@@ -318,15 +325,12 @@ const DashBoard: React.FC = () => {
                   value={dashboardData?.statistics.totalCustomers || 0}
                   valueStyle={{ color: "#722ed1", fontWeight: "bold" }}
                 />
-                <Text type="success">
-                  <ArrowUpOutlined /> 5% so với tháng trước
-                </Text>
               </div>
             </Space>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable style={{ borderRadius: 8, height: "100%" }}>
+          <Card style={{ borderRadius: 8, height: "100%" }}>
             <Space direction="horizontal" size="large" align="center">
               <div
                 style={{
@@ -354,27 +358,10 @@ const DashBoard: React.FC = () => {
 
       <Row gutter={[16, 16]} style={{ marginTop: "24px" }}>
         <Col xs={24} lg={16}>
-          <Card
-            hoverable
-            title={<Title level={4}>Phân tích doanh thu</Title>}
-            style={{ borderRadius: 8 }}
-          >
-            <div
-              style={{
-                height: 350,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text type="secondary">
-                Biểu đồ phân tích doanh thu sẽ hiển thị ở đây
-              </Text>
-            </div>
-          </Card>
+          <RevenueAnalytics showTopProducts={false} />
         </Col>
         <Col xs={24} lg={8}>
-          <Card hoverable style={{ borderRadius: 8 }}>
+          <Card style={{ borderRadius: 8 }}>
             <ReactApexChart
               options={phoneModelsData.options}
               series={phoneModelsData.series}
@@ -386,9 +373,8 @@ const DashBoard: React.FC = () => {
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginTop: "24px" }}>
-        <Col xs={24}>
+        <Col xs={24} lg={16}>
           <Card
-            hoverable
             title={
               <Space>
                 <ShoppingCartOutlined style={{ color: token.colorPrimary }} />
@@ -402,11 +388,50 @@ const DashBoard: React.FC = () => {
           >
             <Table
               columns={orderColumns}
-              dataSource={[]}
+              dataSource={formattedOrders}
               pagination={{ pageSize: 5 }}
               size="middle"
               style={{ marginTop: 16 }}
               rowClassName="hover-row"
+            />
+          </Card>
+        </Col>
+        <Col xs={24} lg={8}>
+          <Card
+            title={
+              <Space>
+                <WarningOutlined style={{ color: "#faad14" }} />
+                <Title level={4} style={{ margin: 0 }}>
+                  Sản phẩm sắp hết hàng
+                </Title>
+              </Space>
+            }
+            style={{ borderRadius: 8 }}
+          >
+            <List
+              dataSource={dashboardData?.lowStockProducts}
+              renderItem={(item) => (
+                <List.Item>
+                  <List.Item.Meta
+                    avatar={
+                      <Avatar
+                        style={{ backgroundColor: "#f5222d" }}
+                        icon={<PhoneOutlined />}
+                      />
+                    }
+                    title={item.product.product_name}
+                    description={
+                      <Space>
+                        <Tag color="error">Còn {item.stock} sản phẩm</Tag>
+                        {item.stock <= 5 && (
+                          <Badge status="error" text="Cần nhập thêm hàng" />
+                        )}
+                      </Space>
+                    }
+                  />
+                </List.Item>
+              )}
+              pagination={{ pageSize: 5 }}
             />
           </Card>
         </Col>

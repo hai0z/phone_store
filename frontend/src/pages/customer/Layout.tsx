@@ -15,6 +15,7 @@ import {
   FloatButton,
   Dropdown,
   MenuProps,
+  Avatar,
 } from "antd";
 import {
   ShoppingCartOutlined,
@@ -40,7 +41,7 @@ const CustomerLayout: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const { getTotalItems } = useCartStore();
   const navigate = useNavigate();
-  const location = useLocation();
+  const pathName = useLocation().pathname;
   const { user, logout } = useAuth();
 
   const [current, setCurrent] = useState("mail");
@@ -89,13 +90,13 @@ const CustomerLayout: React.FC = () => {
 
   const menuItems = [
     {
-      key: "home",
+      key: "/",
       label: "Trang chủ",
 
       onClick: () => navigate("/"),
     },
     {
-      key: "dtdd",
+      key: "/dtdd",
       label: "Điện thoại",
       onClick: () => navigate("/dtdd"),
     },
@@ -149,7 +150,7 @@ const CustomerLayout: React.FC = () => {
               mode="horizontal"
               items={menuItems}
               className="desktop-menu"
-              selectedKeys={[current]}
+              selectedKeys={[pathName]}
               onClick={onClick}
             />
 
@@ -179,9 +180,14 @@ const CustomerLayout: React.FC = () => {
                     menu={{ items: userMenuItems }}
                     placement="bottomRight"
                   >
-                    <Button type="primary" icon={<UserOutlined />}>
-                      {user.full_name}
-                    </Button>
+                    <div style={{ cursor: "pointer" }}>
+                      <Avatar
+                        alt="User Avatar"
+                        style={{ backgroundColor: "#1890ff" }}
+                      >
+                        {user.full_name!.charAt(0)}
+                      </Avatar>
+                    </div>
                   </Dropdown>
                 ) : (
                   <Button

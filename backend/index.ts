@@ -8,12 +8,13 @@ import ColorsRoute from "./src/routes/color.routes";
 import StorageRoute from "./src/routes/storage.routes";
 import RamRoute from "./src/routes/ram.routes";
 import CustomerHomeRoute from "./src/routes/customer.router";
-import AdminHomeRoute from "./src/routes/admin-home.router";
+import AdminHomeRoute from "./src/routes/admin.routes";
 import CartRoute from "./src/routes/cart.routes";
 import AuthRoute from "./src/routes/auth.routes";
 import OrderRoute from "./src/routes/order.routes";
 import EmmailRoute from "./src/routes/email.routes";
 import path from "path";
+import StatisticsRoute from "./src/routes/statistics.routes";
 
 const app = express();
 const port = 8080;
@@ -37,6 +38,7 @@ app.use("/api/v1/cart", CartRoute);
 app.use("/api/v1/auth", AuthRoute);
 app.use("/api/v1/orders", OrderRoute);
 app.use("/api/v1/email", EmmailRoute);
+app.use("/api/v1/statistics", StatisticsRoute);
 
 app.listen(port, () => {
   console.log(`backendd listening at http://localhost:${port}`);

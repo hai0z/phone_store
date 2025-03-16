@@ -552,10 +552,8 @@ const Checkout: React.FC = () => {
                   <Text strong>
                     {form.getFieldValue("paymentMethod") === "cod" &&
                       "Thanh toán khi nhận hàng (COD)"}
-                    {form.getFieldValue("paymentMethod") === "bank" &&
-                      "Chuyển khoản ngân hàng"}
-                    {form.getFieldValue("paymentMethod") === "momo" &&
-                      "Ví điện tử MoMo"}
+                    {form.getFieldValue("paymentMethod") === "vn_pay" &&
+                      "Thanh toán qua VNPay"}
                   </Text>
                 </div>
               </div>

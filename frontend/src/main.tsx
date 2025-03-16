@@ -17,7 +17,7 @@ createRoot(document.getElementById("root")!).render(
         theme={{
           token: {
             colorPrimary: "#F4801A",
-            borderRadius: 2,
+            borderRadius: 4,
           },
         }}
       >
