@@ -141,7 +141,7 @@ const ProductCard = ({ product }: { product: Product }) => {
                     </>
                   ) : (
                     <Text type="danger" strong style={{ fontSize: "18px" }}>
-                      {formatPrice(originalPrice)}
+                      {formatPrice(originalPrice || 0)}
                     </Text>
                   )}
                 </div>

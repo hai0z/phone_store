@@ -45,7 +45,7 @@ const ProfilePage: React.FC = () => {
     queryKey: ["user", user?.customer_id],
     queryFn: async () => {
       const response = await fetch(
-        `http://localhost:8080/api/v1/customer/${user?.customer_id}`,
+        `http://localhost:8080/api/v1/customers/${user?.customer_id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -379,8 +379,6 @@ const ProfilePage: React.FC = () => {
       <AddAddressModal
         isModalVisible={isModalVisible}
         setIsModalVisible={setIsModalVisible}
-        addressForm={addressForm}
-        handleAddAddress={handleAddAddress}
       />
     </div>
   );

@@ -340,7 +340,7 @@ const OrderDetail = () => {
                 </Button>
               </>
             )}
-            <Button onClick={() => navigate("/admin/orders")}>Quay lại</Button>
+            <Button onClick={() => navigate(-1)}>Quay lại</Button>
           </Space>
         </div>
       </Card>

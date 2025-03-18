@@ -1,4 +1,10 @@
-import { Routes, Route, ScrollRestoration, Router } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  ScrollRestoration,
+  Router,
+  Navigate,
+} from "react-router-dom";
 import CustomerLayout from "../pages/customer/Layout";
 import PhoneList from "../pages/customer/PhoneList";
 import Cart from "../pages/customer/cart/Cart";
@@ -12,7 +18,9 @@ import OrderDetail from "../pages/customer/order/OrderDetail";
 import Register from "../pages/customer/login/Register";
 import ForgotPassword from "../pages/customer/login/ForgotPassword";
 import ResetPassword from "../pages/customer/login/ResetPassword";
+import { useAuth } from "../contexts/AuthContext";
 const CustomerRouter = () => {
+  const { user } = useAuth();
   return (
     <Routes>
       <Route path="/" element={<CustomerLayout />}>
@@ -22,7 +30,10 @@ const CustomerRouter = () => {
           <Route path="/dtdd/:id" element={<ProductDetail />} />
         </Route>
         <Route path="cart" element={<Cart />} />
-        <Route path="checkout" element={<CheckOut />} />
+        <Route
+          path="checkout"
+          element={!user ? <Navigate to="/login" /> : <CheckOut />}
+        />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="forgot-password" element={<ForgotPassword />} />

@@ -3,7 +3,11 @@ import { Customers, CustomersAddress } from "@prisma/client";
 
 export class CustomerService extends BaseService {
   async getAllCustomers() {
-    return this.prisma.customers.findMany();
+    return this.prisma.customers.findMany({
+      include: {
+        addresses: true,
+      },
+    });
   }
 
   async getCustomerById(customerId: number) {
@@ -16,7 +20,13 @@ export class CustomerService extends BaseService {
               include: {
                 variant: {
                   include: {
-                    product: true,
+                    product: {
+                      select: {
+                        product_id: true,
+                        product_name: true,
+                        images: true,
+                      },
+                    },
                   },
                 },
               },
@@ -29,11 +39,52 @@ export class CustomerService extends BaseService {
     });
   }
 
+  async getCustomerOrders(customerId: number) {
+    return this.prisma.orders.findMany({
+      where: { customer_id: customerId },
+      include: {
+        orderDetails: {
+          include: {
+            variant: {
+              include: {
+                product: {
+                  select: {
+                    product_id: true,
+                    product_name: true,
+                    images: true,
+                  },
+                },
+                ram: true,
+                storage: true,
+                color: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async getCustomerRatings(customerId: number) {
+    return this.prisma.ratings.findMany({
+      where: { customer_id: customerId },
+      include: {
+        product: {
+          select: {
+            product_id: true,
+            product_name: true,
+          },
+        },
+      },
+    });
+  }
+
   async createCustomer(data: Omit<Customers, "customer_id">) {
     return this.prisma.customers.create({
       data,
     });
   }
+
   async createAddress(
     customerId: number,
     data: Omit<CustomersAddress, "address_id">
@@ -53,6 +104,7 @@ export class CustomerService extends BaseService {
       data,
     });
   }
+
   async updateAddress(addressId: number, data: Partial<CustomersAddress>) {
     return this.prisma.customersAddress.update({
       where: { address_id: addressId },
@@ -65,6 +117,7 @@ export class CustomerService extends BaseService {
       where: { customer_id: customerId },
     });
   }
+
   async deleteAddress(addressId: number) {
     return this.prisma.customersAddress.delete({
       where: { address_id: addressId },

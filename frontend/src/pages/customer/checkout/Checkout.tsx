@@ -107,7 +107,7 @@ const Checkout: React.FC = () => {
     queryKey: ["user", user?.customer_id],
     queryFn: async () => {
       const response = await fetch(
-        `http://localhost:8080/api/v1/customer/${user?.customer_id}`,
+        `http://localhost:8080/api/v1/customers/${user?.customer_id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -266,7 +266,7 @@ const Checkout: React.FC = () => {
     <div
       style={{
         padding: "24px",
-        maxWidth: 1200,
+        maxWidth: 1400,
         margin: "0 auto",
         backgroundColor: token.colorBgContainer,
       }}
@@ -331,7 +331,7 @@ const Checkout: React.FC = () => {
                 <Space direction="vertical" style={{ width: "100%" }}>
                   {userData?.addresses?.map((address: any) => (
                     <Card
-                      key={address.id}
+                      key={address.address_id}
                       style={{
                         marginBottom: 16,
                         borderRadius: 8,

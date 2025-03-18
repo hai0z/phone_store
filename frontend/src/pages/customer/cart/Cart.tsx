@@ -23,6 +23,8 @@ import {
   ShoppingOutlined,
   ShoppingCartOutlined,
   ArrowLeftOutlined,
+  GiftOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../../../store/cartStore";
@@ -123,225 +125,407 @@ const Cart: React.FC = () => {
     navigate("/checkout");
   };
   return (
-    <div style={{ padding: "24px", maxWidth: 1200, margin: "0 auto" }}>
+    <div
+      style={{ background: "#f5f7fa", minHeight: "100vh", padding: "40px 0" }}
+    >
       {contextHolder}
-      <Row align="middle" style={{ marginBottom: 24 }}>
-        <Button
-          type="link"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/dtdd")}
-          style={{ marginRight: 16 }}
-        >
-          Tiếp tục mua hàng
-        </Button>
-        <Title level={3} style={{ margin: 0 }}>
-          <ShoppingCartOutlined style={{ marginRight: 12 }} />
-          Giỏ hàng ({items.length})
-        </Title>
-      </Row>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px" }}>
+        <Row align="middle" style={{ marginBottom: 32 }}>
+          <Button
+            type="link"
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate("/dtdd")}
+            style={{
+              marginRight: 16,
+              fontSize: 16,
+              color: "#1890ff",
+              padding: 0,
+            }}
+          >
+            Tiếp tục mua hàng
+          </Button>
+          <Title level={2} style={{ margin: 0, fontWeight: 700 }}>
+            <ShoppingCartOutlined style={{ marginRight: 16 }} />
+            Giỏ hàng của bạn
+            <Text style={{ fontSize: 18, fontWeight: 400, marginLeft: 12 }}>
+              ({items.length} sản phẩm)
+            </Text>
+          </Title>
+        </Row>
 
-      <Row gutter={[24, 24]}>
-        <Col xs={24} lg={16}>
-          <Card className="cart-items-card">
-            {isLoading ? (
-              <div style={{ padding: "20px" }}>
-                {[1, 2].map((item) => (
-                  <Skeleton key={item} active avatar paragraph={{ rows: 2 }} />
-                ))}
-              </div>
-            ) : cartItems.length > 0 ? (
-              <>
-                <Row
-                  style={{
-                    marginBottom: 16,
-                    padding: "12px 24px",
-                    background: "#f8f9fa",
-                    borderRadius: 8,
-                  }}
-                >
-                  <Checkbox
-                    checked={isAllSelected}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
+        <Row gutter={[32, 32]}>
+          <Col xs={24} lg={16}>
+            <Card
+              className="cart-items-card"
+              style={{
+                borderRadius: 16,
+                boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
+                border: "none",
+              }}
+            >
+              {isLoading ? (
+                <div style={{ padding: "20px" }}>
+                  {[1, 2, 3].map((item) => (
+                    <Skeleton
+                      key={item}
+                      active
+                      avatar
+                      paragraph={{ rows: 3 }}
+                      style={{ marginBottom: 24 }}
+                    />
+                  ))}
+                </div>
+              ) : cartItems.length > 0 ? (
+                <>
+                  <Row
+                    style={{
+                      marginBottom: 24,
+                      padding: "16px 24px",
+                      background: "#f0f7ff",
+                      borderRadius: 12,
+                    }}
+                    align="middle"
                   >
-                    <Text strong>
+                    <Checkbox
+                      checked={isAllSelected}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      style={{ marginRight: 12 }}
+                    />
+                    <Text strong style={{ fontSize: 16 }}>
                       Chọn tất cả (
                       {cartItems.filter((item) => item.stock > 0).length} sản
                       phẩm)
                     </Text>
-                  </Checkbox>
-                </Row>
-                <List
-                  itemLayout="horizontal"
-                  dataSource={cartItems}
-                  renderItem={(item) => (
-                    <Badge.Ribbon
-                      placement="start"
-                      text={item.stock === 0 ? "Hết hàng" : ""}
-                      color={item.stock === 0 ? "red" : "transparent"}
-                    >
-                      <List.Item
-                        className="cart-item"
+                  </Row>
+                  <List
+                    itemLayout="horizontal"
+                    dataSource={cartItems}
+                    renderItem={(item) => (
+                      <Badge.Ribbon
+                        placement="start"
+                        text={item.stock === 0 ? "Hết hàng" : ""}
+                        color={item.stock === 0 ? "#ff4d4f" : "transparent"}
                         style={{
-                          padding: "24px",
-                          margin: "0 0 16px",
-                          background: item.selected ? "#f0f7ff" : "#fff",
-                          borderRadius: 12,
-                          transition: "all 0.3s ease",
-                          opacity: item.stock > 0 ? 1 : 0.6,
+                          display: item.stock === 0 ? "block" : "none",
+                          padding: "0 15px",
                         }}
                       >
-                        <Row
-                          gutter={[16, 16]}
-                          align="middle"
-                          style={{ width: "100%" }}
+                        <List.Item
+                          className="cart-item"
+                          style={{
+                            padding: "24px",
+                            margin: "0 0 16px",
+                            background: item.selected ? "#f0f7ff" : "#fff",
+                            borderRadius: 12,
+                            transition: "all 0.3s ease",
+                            opacity: item.stock > 0 ? 1 : 0.6,
+                            border: item.selected
+                              ? "1px solid #1890ff"
+                              : "1px solid #f0f0f0",
+                          }}
                         >
-                          <Col flex="none">
-                            <Checkbox
-                              disabled={item.stock === 0}
-                              checked={item.selected}
-                              onChange={(e) =>
-                                handleSelectItem(
-                                  item.variant_id,
-                                  e.target.checked
-                                )
-                              }
-                            />
-                          </Col>
-                          <Col flex="auto">
-                            <Space size={16} align="start">
+                          <Row
+                            gutter={[24, 16]}
+                            align="middle"
+                            style={{ width: "100%" }}
+                          >
+                            <Col flex="none">
+                              <Checkbox
+                                disabled={item.stock === 0}
+                                checked={item.selected}
+                                onChange={(e) =>
+                                  handleSelectItem(
+                                    item.variant_id,
+                                    e.target.checked
+                                  )
+                                }
+                                style={{ transform: "scale(1.2)" }}
+                              />
+                            </Col>
+                            <Col xs={24} sm={8} md={6} lg={5}>
                               <Image
                                 src={item.image}
                                 alt={item.product_name}
-                                width={100}
-                                height={100}
+                                width={120}
+                                height={120}
                                 preview={false}
                                 style={{
                                   objectFit: "contain",
                                   background: "#fff",
-                                  borderRadius: 8,
+                                  borderRadius: 12,
                                   padding: 8,
                                   border: "1px solid #f0f0f0",
+                                  boxShadow: "0 4px 8px rgba(0,0,0,0.05)",
                                 }}
                               />
-                              <Space direction="vertical" size={8}>
-                                <Text strong style={{ fontSize: 16 }}>
-                                  {item.product_name}
-                                </Text>
-                                <Space size={8}>
-                                  <Tag color="cyan">{item.color}</Tag>
-                                  <Tag color="purple">{item.storage}</Tag>
-                                  <Tag color="blue">{item.ram}</Tag>
-                                </Space>
-                                <Space size={24}>
-                                  <Text
-                                    type="danger"
-                                    strong
-                                    style={{ fontSize: 18 }}
+                            </Col>
+                            <Col xs={24} sm={16} md={18} lg={19}>
+                              <Row gutter={[16, 16]}>
+                                <Col xs={24} md={12}>
+                                  <Space
+                                    direction="vertical"
+                                    size={12}
+                                    style={{ width: "100%" }}
                                   >
-                                    {item.salePrice.toLocaleString() + " đ"}
-                                  </Text>
-                                  <Space>
-                                    <InputNumber
-                                      disabled={item.stock === 0}
-                                      min={1}
-                                      max={item.stock <= 5 ? item.stock : 5}
-                                      value={item.quantity}
-                                      onChange={(value) =>
-                                        handleQuantityChange(
-                                          item.variant_id,
-                                          value
-                                        )
-                                      }
-                                      style={{ width: 60 }}
-                                    />
-                                    <Popconfirm
-                                      title="Bạn có chắc chắn muốn xóa sản phẩm này?"
-                                      onConfirm={() =>
-                                        handleRemoveItem(item.variant_id)
-                                      }
-                                      okText="Xóa"
-                                      cancelText="Hủy"
-                                    >
-                                      <Button
-                                        type="text"
-                                        danger
-                                        icon={<DeleteOutlined />}
-                                      />
-                                    </Popconfirm>
+                                    <Text strong style={{ fontSize: 18 }}>
+                                      {item.product_name}
+                                    </Text>
+                                    <Space size={8} wrap>
+                                      <Tag
+                                        color="blue"
+                                        style={{
+                                          borderRadius: 20,
+                                          padding: "4px 12px",
+                                        }}
+                                      >
+                                        {item.color}
+                                      </Tag>
+                                      <Tag
+                                        color="purple"
+                                        style={{
+                                          borderRadius: 20,
+                                          padding: "4px 12px",
+                                        }}
+                                      >
+                                        {item.storage}
+                                      </Tag>
+                                      <Tag
+                                        color="#13c2c2"
+                                        style={{
+                                          borderRadius: 20,
+                                          padding: "4px 12px",
+                                        }}
+                                      >
+                                        {item.ram}
+                                      </Tag>
+                                    </Space>
+                                    <Text type="secondary">
+                                      {item.stock > 0
+                                        ? `Còn ${item.stock} sản phẩm`
+                                        : "Hết hàng"}
+                                    </Text>
                                   </Space>
-                                </Space>
-                              </Space>
-                            </Space>
-                          </Col>
-                          <Col>
-                            <Text type="danger" strong style={{ fontSize: 20 }}>
-                              {(
-                                item.salePrice * item.quantity
-                              ).toLocaleString() + " đ"}
-                            </Text>
-                          </Col>
-                        </Row>
-                      </List.Item>
-                    </Badge.Ribbon>
-                  )}
-                />
-              </>
-            ) : (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="Giỏ hàng của bạn đang trống"
-              >
-                <Button type="primary" onClick={() => navigate("/dtdd")}>
-                  Mua sắm ngay
-                </Button>
-              </Empty>
-            )}
-          </Card>
-        </Col>
-        <Col xs={24} lg={8}>
-          <Card className="cart-summary-card">
-            <Title level={4}>Tổng tiền giỏ hàng</Title>
-            <Divider />
-            <Space direction="vertical" size="large" style={{ width: "100%" }}>
-              <Row justify="space-between">
-                <Text>Sản phẩm đã chọn:</Text>
-                <Text strong>{selectedItems.length}</Text>
-              </Row>
-              <Row justify="space-between">
-                <Text>Tạm tính:</Text>
-                <Text strong>{totalAmount.toLocaleString()} đ</Text>
-              </Row>
-              <Row justify="space-between">
-                <Text>Giảm giá:</Text>
-                <Text strong>0 đ</Text>
-              </Row>
-              <Divider />
-              <Row justify="space-between" align="middle">
-                <Text>Tổng tiền:</Text>
-                <Text style={{ fontSize: 24 }} type="danger" strong>
-                  {totalAmount.toLocaleString() + " đ"}
-                </Text>
-              </Row>
-              <Button
-                type="primary"
+                                </Col>
+                                <Col xs={12} md={6}>
+                                  <Space
+                                    direction="vertical"
+                                    size={8}
+                                    align="start"
+                                  >
+                                    <Text type="secondary">Đơn giá</Text>
+                                    <Text
+                                      type="danger"
+                                      strong
+                                      style={{ fontSize: 18 }}
+                                    >
+                                      {item.salePrice.toLocaleString() + " đ"}
+                                    </Text>
+                                  </Space>
+                                </Col>
+                                <Col xs={12} md={6}>
+                                  <Space
+                                    direction="vertical"
+                                    size={8}
+                                    align="end"
+                                    style={{ width: "100%" }}
+                                  >
+                                    <Text type="secondary">Thành tiền</Text>
+                                    <Text
+                                      type="danger"
+                                      strong
+                                      style={{ fontSize: 18 }}
+                                    >
+                                      {(
+                                        item.salePrice * item.quantity
+                                      ).toLocaleString() + " đ"}
+                                    </Text>
+                                    <Space>
+                                      <InputNumber
+                                        disabled={item.stock === 0}
+                                        min={1}
+                                        max={item.stock <= 5 ? item.stock : 5}
+                                        value={item.quantity}
+                                        onChange={(value) =>
+                                          handleQuantityChange(
+                                            item.variant_id,
+                                            value
+                                          )
+                                        }
+                                        style={{
+                                          width: 60,
+                                          borderRadius: 8,
+                                        }}
+                                      />
+                                      <Popconfirm
+                                        title="Bạn có chắc chắn muốn xóa sản phẩm này?"
+                                        onConfirm={() =>
+                                          handleRemoveItem(item.variant_id)
+                                        }
+                                        okText="Xóa"
+                                        cancelText="Hủy"
+                                      >
+                                        <Button
+                                          type="text"
+                                          danger
+                                          icon={<DeleteOutlined />}
+                                          style={{ borderRadius: 8 }}
+                                        />
+                                      </Popconfirm>
+                                    </Space>
+                                  </Space>
+                                </Col>
+                              </Row>
+                            </Col>
+                          </Row>
+                        </List.Item>
+                      </Badge.Ribbon>
+                    )}
+                  />
+                </>
+              ) : (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={
+                    <Text style={{ fontSize: 16 }}>
+                      Giỏ hàng của bạn đang trống
+                    </Text>
+                  }
+                  style={{ padding: "60px 0" }}
+                >
+                  <Button
+                    type="primary"
+                    onClick={() => navigate("/dtdd")}
+                    size="large"
+                    style={{
+                      borderRadius: 30,
+                      height: 48,
+                      padding: "0 32px",
+                      fontSize: 16,
+                      marginTop: 16,
+                    }}
+                  >
+                    Mua sắm ngay
+                  </Button>
+                </Empty>
+              )}
+            </Card>
+          </Col>
+          <Col xs={24} lg={8}>
+            <Card
+              className="cart-summary-card"
+              style={{
+                borderRadius: 16,
+                boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
+                border: "none",
+                position: "sticky",
+                top: 24,
+              }}
+            >
+              <Title level={4} style={{ marginBottom: 24, fontWeight: 600 }}>
+                Tổng tiền giỏ hàng
+              </Title>
+              <Divider style={{ margin: "16px 0" }} />
+              <Space
+                direction="vertical"
                 size="large"
-                icon={<ShoppingOutlined />}
-                block
-                onClick={handleOrder}
-                disabled={selectedItems.length === 0}
-                style={{
-                  height: 50,
-                  fontSize: 16,
-                  borderRadius: 8,
-                  marginTop: 16,
-                }}
+                style={{ width: "100%" }}
               >
-                Đặt hàng
-              </Button>
-            </Space>
-          </Card>
-        </Col>
-      </Row>
+                <Row justify="space-between">
+                  <Text style={{ fontSize: 16 }}>Sản phẩm đã chọn:</Text>
+                  <Text strong style={{ fontSize: 16 }}>
+                    {selectedItems.length}
+                  </Text>
+                </Row>
+                <Row justify="space-between">
+                  <Text style={{ fontSize: 16 }}>Tạm tính:</Text>
+                  <Text strong style={{ fontSize: 16 }}>
+                    {totalAmount.toLocaleString()} đ
+                  </Text>
+                </Row>
+                <Row justify="space-between">
+                  <Text style={{ fontSize: 16 }}>Giảm giá:</Text>
+                  <Text strong style={{ fontSize: 16, color: "#52c41a" }}>
+                    0 đ
+                  </Text>
+                </Row>
+                <Divider style={{ margin: "16px 0" }} />
+                <Row justify="space-between" align="middle">
+                  <Text style={{ fontSize: 18 }}>Tổng tiền:</Text>
+                  <Text style={{ fontSize: 24 }} type="danger" strong>
+                    {totalAmount.toLocaleString() + " đ"}
+                  </Text>
+                </Row>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<ShoppingOutlined />}
+                  block
+                  onClick={handleOrder}
+                  disabled={selectedItems.length === 0}
+                  style={{
+                    height: 54,
+                    fontSize: 18,
+                    borderRadius: 30,
+                    marginTop: 24,
+                    fontWeight: 600,
+                    background:
+                      selectedItems.length === 0
+                        ? ""
+                        : "linear-gradient(135deg, #1890ff 0%, #096dd9 100%)",
+                    border: "none",
+                    boxShadow: "0 8px 16px rgba(24, 144, 255, 0.3)",
+                  }}
+                >
+                  Đặt hàng ngay
+                </Button>
+
+                <div style={{ marginTop: 24 }}>
+                  <Space
+                    direction="vertical"
+                    size={16}
+                    style={{ width: "100%" }}
+                  >
+                    <Card
+                      size="small"
+                      style={{
+                        borderRadius: 12,
+                        background: "#f6ffed",
+                        border: "1px solid #b7eb8f",
+                      }}
+                    >
+                      <Space>
+                        <SafetyCertificateOutlined
+                          style={{ color: "#52c41a", fontSize: 18 }}
+                        />
+                        <Text style={{ color: "#52c41a" }}>
+                          Bảo hành chính hãng 12 tháng
+                        </Text>
+                      </Space>
+                    </Card>
+                    <Card
+                      size="small"
+                      style={{
+                        borderRadius: 12,
+                        background: "#e6f7ff",
+                        border: "1px solid #91d5ff",
+                      }}
+                    >
+                      <Space>
+                        <GiftOutlined
+                          style={{ color: "#1890ff", fontSize: 18 }}
+                        />
+                        <Text style={{ color: "#1890ff" }}>
+                          Miễn phí giao hàng cho đơn từ 2 triệu
+                        </Text>
+                      </Space>
+                    </Card>
+                  </Space>
+                </div>
+              </Space>
+            </Card>
+          </Col>
+        </Row>
+      </div>
     </div>
   );
 };

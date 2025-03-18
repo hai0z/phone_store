@@ -12,6 +12,7 @@ import {
   Select,
   Row,
   Col,
+  DatePicker,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
@@ -28,6 +29,7 @@ import { useState } from "react";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 interface Order {
   order_id: number;
@@ -46,6 +48,9 @@ const OrderList = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<
+    [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
+  >(null);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["orders"],
@@ -187,7 +192,14 @@ const OrderList = () => {
         const matchesStatus =
           statusFilter === null || order.status === statusFilter;
 
-        return matchesSearch && matchesStatus;
+        const matchesDateRange =
+          !dateRange ||
+          !dateRange[0] ||
+          !dateRange[1] ||
+          (dayjs(order.created_at).isAfter(dateRange[0].startOf("day")) &&
+            dayjs(order.created_at).isBefore(dateRange[1].endOf("day")));
+
+        return matchesSearch && matchesStatus && matchesDateRange;
       })
     : [];
 
@@ -210,7 +222,7 @@ const OrderList = () => {
         </div>
 
         <Row gutter={16} style={{ marginBottom: "16px" }}>
-          <Col span={12}>
+          <Col span={8}>
             <Input
               placeholder="Tìm kiếm theo mã đơn hàng, tên khách hàng hoặc số điện thoại"
               prefix={<SearchOutlined />}
@@ -219,7 +231,7 @@ const OrderList = () => {
               allowClear
             />
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Select
               placeholder="Lọc theo trạng thái đơn hàng"
               style={{ width: "100%" }}
@@ -236,6 +248,14 @@ const OrderList = () => {
               <Option value="da_giao_hang">Đã giao hàng</Option>
               <Option value="da_huy">Đã hủy</Option>
             </Select>
+          </Col>
+          <Col span={8}>
+            <RangePicker
+              style={{ width: "100%" }}
+              onChange={(dates) => setDateRange(dates)}
+              format="DD/MM/YYYY"
+              placeholder={["Từ ngày", "Đến ngày"]}
+            />
           </Col>
         </Row>
 

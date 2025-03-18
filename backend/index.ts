@@ -32,7 +32,7 @@ app.use("/api/v1/categories", CategoriesRoute);
 app.use("/api/v1/colors", ColorsRoute);
 app.use("/api/v1/storages", StorageRoute);
 app.use("/api/v1/rams", RamRoute);
-app.use("/api/v1/customer", CustomerHomeRoute);
+app.use("/api/v1/customers", CustomerHomeRoute);
 app.use("/api/v1/admin", AdminHomeRoute);
 app.use("/api/v1/cart", CartRoute);
 app.use("/api/v1/auth", AuthRoute);

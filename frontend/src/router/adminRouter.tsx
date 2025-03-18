@@ -16,6 +16,8 @@ import OrderList from "../pages/admin/order/Index";
 import OrderDetail from "../pages/admin/order/Detail";
 import OrderEdit from "../pages/admin/order/Edit";
 import RevenueAnalytics from "../pages/admin/stats/RevenueAnalytics";
+import CustomerList from "../pages/admin/customer/CustomerList";
+import CustomerDetail from "../pages/admin/customer/CustomerDetail";
 const AdminRouter = () => {
   return (
     <Routes>
@@ -51,6 +53,10 @@ const AdminRouter = () => {
         </Route>
         <Route>
           <Route path="/admin/revenue" element={<RevenueAnalytics />} />
+        </Route>
+        <Route>
+          <Route path="/admin/customers" element={<CustomerList />} />
+          <Route path="/admin/customers/:id" element={<CustomerDetail />} />
         </Route>
       </Route>
     </Routes>

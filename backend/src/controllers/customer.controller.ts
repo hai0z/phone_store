@@ -1,13 +1,27 @@
 import { Request, Response } from "express";
 import { CustomerService } from "../services/customer.service";
+import { HomeService } from "../services/home.service";
 
 class CustomerController {
   private customerService: CustomerService;
+  private homeService: HomeService;
 
   constructor() {
     this.customerService = new CustomerService();
+    this.homeService = new HomeService();
   }
 
+  getHomeData = async (req: Request, res: Response) => {
+    try {
+      const homeData = await this.homeService.getCustomerHomeData();
+      res.json(homeData);
+    } catch (error: any) {
+      res.status(500).json({
+        message: "Error fetching home data",
+        error: error.message,
+      });
+    }
+  };
   getAllCustomers = async (req: Request, res: Response) => {
     try {
       const customers = await this.customerService.getAllCustomers();
@@ -32,6 +46,36 @@ class CustomerController {
       res.json(customerWithoutPassword);
     } catch (error) {
       res.status(500).json({ message: "Error fetching customer", error });
+    }
+  };
+
+  getCustomerOrders = async (req: Request, res: Response) => {
+    try {
+      const customerId = parseInt(req.params.id);
+      const orders = await this.customerService.getCustomerOrders(customerId);
+      if (!orders) {
+        return res.status(404).json({ message: "Orders not found" });
+      }
+      res.json(orders);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Error fetching customer orders", error });
+    }
+  };
+
+  getCustomerRatings = async (req: Request, res: Response) => {
+    try {
+      const customerId = parseInt(req.params.id);
+      const ratings = await this.customerService.getCustomerRatings(customerId);
+      if (!ratings) {
+        return res.status(404).json({ message: "Ratings not found" });
+      }
+      res.json(ratings);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Error fetching customer ratings", error });
     }
   };
 
