@@ -14,11 +14,12 @@ import {
   Input,
   Pagination,
   Tooltip,
-  Collapse,
   List,
   InputNumber,
   Spin,
   Flex,
+  Card,
+  theme,
 } from "antd";
 import {
   FilterOutlined,
@@ -42,8 +43,8 @@ import ProductCard from "./product/components/ProductCard";
 import { useSearchParams } from "react-router-dom";
 
 const { Title, Text } = Typography;
-const { Panel } = Collapse;
 const { Search } = Input;
+const { useToken } = theme;
 
 interface Product {
   product_id: number;
@@ -57,6 +58,7 @@ interface Product {
 }
 
 const PhoneList: React.FC = () => {
+  const { token } = useToken();
   const [filterDrawerVisible, setFilterDrawerVisible] = useState(false);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
@@ -284,78 +286,232 @@ const PhoneList: React.FC = () => {
   const renderFilterDrawer = () => (
     <Drawer
       title={
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <FilterOutlined style={{ marginRight: "8px" }} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            fontSize: "18px",
+            color: token.colorPrimary,
+          }}
+        >
+          <FilterOutlined style={{ marginRight: "12px" }} />
           Bộ lọc sản phẩm
         </div>
       }
       placement="right"
       onClose={() => setFilterDrawerVisible(false)}
       open={filterDrawerVisible}
-      width={320}
+      width={360}
+      styles={{
+        body: {
+          padding: "0 16px",
+          backgroundColor: token.colorBgContainer,
+        },
+        header: {
+          borderBottom: `1px solid ${token.colorBorderSecondary}`,
+          padding: "16px 24px",
+        },
+        footer: {
+          borderTop: `1px solid ${token.colorBorderSecondary}`,
+          padding: "16px 24px",
+        },
+      }}
+      footer={
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <Button
+            type="primary"
+            block
+            onClick={handleFilterChange}
+            size="large"
+            style={{
+              borderRadius: "8px",
+              height: "46px",
+              fontWeight: "bold",
+            }}
+          >
+            Áp dụng bộ lọc
+          </Button>
+          <Button
+            block
+            onClick={() => {
+              setSelectedBrands([]);
+              setSelectedStorages([]);
+              setSelectedRams([]);
+              setPriceRange([0, 2000]);
+              setSearchParams({});
+            }}
+            style={{
+              marginTop: "12px",
+              borderRadius: "8px",
+              height: "46px",
+            }}
+          >
+            Đặt lại tất cả
+          </Button>
+        </Space>
+      }
     >
-      <Collapse defaultActiveKey={["1", "2", "3"]} bordered={false}>
-        <Panel header="Thương hiệu" key="1">
+      <div style={{ marginTop: "16px" }}>
+        <Card
+          title={
+            <Text strong style={{ fontSize: "16px" }}>
+              <span style={{ color: token.colorPrimary, marginRight: "8px" }}>
+                ●
+              </span>
+              Thương hiệu
+            </Text>
+          }
+          bordered={false}
+          style={{
+            marginBottom: "16px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          }}
+          headStyle={{
+            borderBottom: "none",
+            padding: "16px 16px 0 16px",
+          }}
+          bodyStyle={{ padding: "8px 16px 16px 16px" }}
+        >
           <Checkbox.Group
             value={selectedBrands}
             onChange={(values) => setSelectedBrands(values as string[])}
+            style={{ width: "100%" }}
           >
-            <Space direction="vertical">
+            <Row gutter={[8, 12]}>
               {filterOptions?.brands.map((brand) => (
-                <Checkbox key={brand.brand_id} value={brand.brand_id}>
-                  {brand.brand_name}
-                </Checkbox>
+                <Col span={12} key={brand.brand_id}>
+                  <Checkbox value={brand.brand_id} style={{ fontSize: "14px" }}>
+                    {brand.brand_name}
+                  </Checkbox>
+                </Col>
               ))}
-            </Space>
+            </Row>
           </Checkbox.Group>
-        </Panel>
+        </Card>
 
-        <Panel header="Bộ nhớ trong" key="2">
+        <Card
+          title={
+            <Text strong style={{ fontSize: "16px" }}>
+              <span style={{ color: token.colorSuccess, marginRight: "8px" }}>
+                ●
+              </span>
+              Bộ nhớ trong
+            </Text>
+          }
+          bordered={false}
+          style={{
+            marginBottom: "16px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          }}
+          headStyle={{
+            borderBottom: "none",
+            padding: "16px 16px 0 16px",
+          }}
+          bodyStyle={{ padding: "8px 16px 16px 16px" }}
+        >
           <Checkbox.Group
             value={selectedStorages}
             onChange={(values) => setSelectedStorages(values as string[])}
+            style={{ width: "100%" }}
           >
-            <Space direction="vertical">
+            <Row gutter={[8, 12]}>
               {filterOptions?.storages.map((storage) => (
-                <Checkbox key={storage.storage_id} value={storage.storage_id}>
-                  {storage.storage_capacity}
-                </Checkbox>
+                <Col span={12} key={storage.storage_id}>
+                  <Checkbox
+                    value={storage.storage_id}
+                    style={{ fontSize: "14px" }}
+                  >
+                    {storage.storage_capacity}
+                  </Checkbox>
+                </Col>
               ))}
-            </Space>
+            </Row>
           </Checkbox.Group>
-        </Panel>
+        </Card>
 
-        <Panel header="RAM" key="3">
+        <Card
+          title={
+            <Text strong style={{ fontSize: "16px" }}>
+              <span style={{ color: token.colorWarning, marginRight: "8px" }}>
+                ●
+              </span>
+              RAM
+            </Text>
+          }
+          bordered={false}
+          style={{
+            marginBottom: "16px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          }}
+          headStyle={{
+            borderBottom: "none",
+            padding: "16px 16px 0 16px",
+          }}
+          bodyStyle={{ padding: "8px 16px 16px 16px" }}
+        >
           <Checkbox.Group
             value={selectedRams}
             onChange={(values) => setSelectedRams(values as string[])}
+            style={{ width: "100%" }}
           >
-            <Space direction="vertical">
+            <Row gutter={[8, 12]}>
               {filterOptions?.ram.map((ram) => (
-                <Checkbox key={ram.ram_id} value={ram.ram_id}>
-                  {ram.capacity}
-                </Checkbox>
+                <Col span={12} key={ram.ram_id}>
+                  <Checkbox value={ram.ram_id} style={{ fontSize: "14px" }}>
+                    {ram.capacity}
+                  </Checkbox>
+                </Col>
               ))}
-            </Space>
+            </Row>
           </Checkbox.Group>
-        </Panel>
+        </Card>
 
-        <Panel header="Khoảng giá" key="4">
+        <Card
+          title={
+            <Text strong style={{ fontSize: "16px" }}>
+              <span style={{ color: token.colorError, marginRight: "8px" }}>
+                ●
+              </span>
+              Khoảng giá
+            </Text>
+          }
+          bordered={false}
+          style={{
+            marginBottom: "16px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          }}
+          headStyle={{
+            borderBottom: "none",
+            padding: "16px 16px 0 16px",
+          }}
+          bodyStyle={{ padding: "16px" }}
+        >
           <Slider
             range
             min={0}
             max={2000}
             value={priceRange}
             onChange={(value) => setPriceRange(value as [number, number])}
+            tooltip={{ formatter: (value) => `$${value}` }}
+            styles={{
+              track: { backgroundColor: token.colorError },
+              handle: { borderColor: token.colorError },
+            }}
           />
-          <Flex justify="space-between">
+          <Flex justify="space-between" style={{ marginTop: "16px" }}>
             <InputNumber
               min={0}
               max={priceRange[1]}
               value={priceRange[0]}
               onChange={(value) => setPriceRange([value || 0, priceRange[1]])}
               formatter={(value) => `$ ${value}`}
+              style={{ width: "45%" }}
             />
+            <Text type="secondary">đến</Text>
             <InputNumber
               min={priceRange[0]}
               max={2000}
@@ -364,28 +520,10 @@ const PhoneList: React.FC = () => {
                 setPriceRange([priceRange[0], value || 2000])
               }
               formatter={(value) => `$ ${value}`}
+              style={{ width: "45%" }}
             />
           </Flex>
-        </Panel>
-      </Collapse>
-
-      <div style={{ marginTop: "24px" }}>
-        <Button type="primary" block onClick={handleFilterChange}>
-          Áp dụng bộ lọc
-        </Button>
-        <Button
-          block
-          onClick={() => {
-            setSelectedBrands([]);
-            setSelectedStorages([]);
-            setSelectedRams([]);
-            setPriceRange([0, 2000]);
-            setSearchParams({});
-          }}
-          style={{ marginTop: "12px" }}
-        >
-          Đặt lại
-        </Button>
+        </Card>
       </div>
     </Drawer>
   );
@@ -434,23 +572,6 @@ const PhoneList: React.FC = () => {
               ]}
               suffixIcon={<DollarOutlined />}
             />
-
-            <Button.Group>
-              <Tooltip title="Hiển thị dạng lưới">
-                <Button
-                  type={viewMode === "grid" ? "primary" : "default"}
-                  icon={<AppstoreOutlined />}
-                  onClick={() => setViewMode("grid")}
-                />
-              </Tooltip>
-              <Tooltip title="Hiển thị dạng danh sách">
-                <Button
-                  type={viewMode === "list" ? "primary" : "default"}
-                  icon={<BarsOutlined />}
-                  onClick={() => setViewMode("list")}
-                />
-              </Tooltip>
-            </Button.Group>
 
             <Button
               type="primary"

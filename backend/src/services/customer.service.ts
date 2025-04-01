@@ -106,6 +106,18 @@ export class CustomerService extends BaseService {
   }
 
   async updateAddress(addressId: number, data: Partial<CustomersAddress>) {
+    const address = await this.prisma.customersAddress.findUnique({
+      where: { address_id: addressId },
+    });
+    if (!address) {
+      throw new Error("Address not found");
+    }
+    if (data.is_default) {
+      await this.prisma.customersAddress.updateMany({
+        where: { customer_id: address.customer_id },
+        data: { is_default: false },
+      });
+    }
     return this.prisma.customersAddress.update({
       where: { address_id: addressId },
       data,

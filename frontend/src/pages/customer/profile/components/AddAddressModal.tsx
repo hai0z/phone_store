@@ -1,22 +1,38 @@
 import React, { useState } from "react";
-import { Modal, Form, Select, Button, Input } from "antd";
+import {
+  Modal,
+  Form,
+  Select,
+  Button,
+  Input,
+  Checkbox,
+  message,
+  notification,
+} from "antd";
 import Location from "../../../../constants/location.json";
 import { Location as LocationType } from "../../../../types";
+import axios from "axios";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 interface AddAddressModalProps {
   isModalVisible: boolean;
   setIsModalVisible: (visible: boolean) => void;
+  onAddAddress: () => void;
 }
 
 const AddAddressModal: React.FC<AddAddressModalProps> = ({
   isModalVisible,
   setIsModalVisible,
+  onAddAddress,
 }) => {
   const location: LocationType[] = JSON.parse(JSON.stringify(Location));
   const [selectedCity, setSelectedCity] = useState<LocationType | null>(null);
   const [selectedDistrict, setSelectedDistrict] = useState<any>(null);
   const [selectedWard, setSelectedWard] = useState<any>(null);
   const [addressForm] = Form.useForm();
+  const [notificationApi, notificationContextHolder] =
+    notification.useNotification();
+  const { user } = useAuth();
   const handleCityChange = (value: string) => {
     const city = location.find((c) => c.code === Number(value));
     setSelectedCity(city || null);
@@ -55,14 +71,38 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
     });
   };
 
-  const onFinish = (values: any) => {
+  const onFinish = async (values: any) => {
     const formattedAddress = {
       ...values,
       city_name: selectedCity?.name,
       district_name: selectedDistrict?.name,
       ward_name: selectedWard?.name,
     };
-    console.log(formattedAddress);
+    console.table(formattedAddress);
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/api/v1/customers/${user?.customer_id}/addresses`,
+        {
+          customer_id: user?.customer_id,
+          address: `${formattedAddress.street}, ${formattedAddress.ward_name}, ${formattedAddress.district_name}, ${formattedAddress.city_name}`,
+          is_default: values.is_default || false,
+        }
+      );
+      if (response.status === 201) {
+        setIsModalVisible(false);
+        addressForm.resetFields();
+        notificationApi.success({
+          message: "Thêm địa chỉ thành công",
+        });
+        onAddAddress();
+      } else {
+        notificationApi.error({
+          message: "Thêm địa chỉ thất bại",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -72,6 +112,7 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
       onCancel={() => setIsModalVisible(false)}
       footer={null}
     >
+      {notificationContextHolder}
       <Form form={addressForm} layout="vertical" onFinish={onFinish}>
         <Form.Item
           name="city"
@@ -125,7 +166,7 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
             disabled={!selectedDistrict}
             showSearch
             filterOption={(input, option) =>
-              (option?.label ?? "")
+              (option?.label ?? ("" as any))
                 .toLocaleLowerCase()
                 .includes(input.toLocaleLowerCase())
             }
@@ -145,6 +186,18 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
             placeholder="Nhập số nhà, tên đường..."
             disabled={!selectedWard}
           />
+        </Form.Item>
+
+        <Form.Item name="is_default" valuePropName="checked">
+          <Checkbox
+            onChange={(e) => {
+              addressForm.setFieldsValue({
+                is_default: e.target.checked,
+              });
+            }}
+          >
+            Đặt làm địa chỉ mặc định
+          </Checkbox>
         </Form.Item>
 
         <Form.Item>

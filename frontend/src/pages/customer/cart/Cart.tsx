@@ -17,6 +17,7 @@ import {
   Skeleton,
   Badge,
   Popconfirm,
+  theme,
 } from "antd";
 import {
   DeleteOutlined,
@@ -53,6 +54,7 @@ const Cart: React.FC = () => {
   const { items, removeItem, updateQuantity, setOrder } = useCartStore();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
+  const { token } = theme.useToken();
   const { isLoading } = useQuery({
     queryKey: ["cartItems"],
     queryFn: async () => {
@@ -126,7 +128,11 @@ const Cart: React.FC = () => {
   };
   return (
     <div
-      style={{ background: "#f5f7fa", minHeight: "100vh", padding: "40px 0" }}
+      style={{
+        background: token.colorBgLayout,
+        minHeight: "100vh",
+        padding: "40px 0",
+      }}
     >
       {contextHolder}
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px" }}>
@@ -138,7 +144,7 @@ const Cart: React.FC = () => {
             style={{
               marginRight: 16,
               fontSize: 16,
-              color: "#1890ff",
+              color: token.colorPrimary,
               padding: 0,
             }}
           >
@@ -159,7 +165,7 @@ const Cart: React.FC = () => {
               className="cart-items-card"
               style={{
                 borderRadius: 16,
-                boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
+                boxShadow: token.boxShadowTertiary,
                 border: "none",
               }}
             >
@@ -181,7 +187,7 @@ const Cart: React.FC = () => {
                     style={{
                       marginBottom: 24,
                       padding: "16px 24px",
-                      background: "#f0f7ff",
+                      background: token.colorPrimaryBg,
                       borderRadius: 12,
                     }}
                     align="middle"
@@ -204,7 +210,9 @@ const Cart: React.FC = () => {
                       <Badge.Ribbon
                         placement="start"
                         text={item.stock === 0 ? "Hết hàng" : ""}
-                        color={item.stock === 0 ? "#ff4d4f" : "transparent"}
+                        color={
+                          item.stock === 0 ? token.colorError : "transparent"
+                        }
                         style={{
                           display: item.stock === 0 ? "block" : "none",
                           padding: "0 15px",
@@ -215,13 +223,15 @@ const Cart: React.FC = () => {
                           style={{
                             padding: "24px",
                             margin: "0 0 16px",
-                            background: item.selected ? "#f0f7ff" : "#fff",
+                            background: item.selected
+                              ? token.colorPrimaryBg
+                              : token.colorBgContainer,
                             borderRadius: 12,
                             transition: "all 0.3s ease",
                             opacity: item.stock > 0 ? 1 : 0.6,
                             border: item.selected
-                              ? "1px solid #1890ff"
-                              : "1px solid #f0f0f0",
+                              ? `1px solid ${token.colorPrimary}`
+                              : `1px solid ${token.colorBorderSecondary}`,
                           }}
                         >
                           <Row
@@ -251,11 +261,11 @@ const Cart: React.FC = () => {
                                 preview={false}
                                 style={{
                                   objectFit: "contain",
-                                  background: "#fff",
+                                  background: token.colorBgContainer,
                                   borderRadius: 12,
                                   padding: 8,
-                                  border: "1px solid #f0f0f0",
-                                  boxShadow: "0 4px 8px rgba(0,0,0,0.05)",
+                                  border: `1px solid ${token.colorBorderSecondary}`,
+                                  boxShadow: token.boxShadowTertiary,
                                 }}
                               />
                             </Col>
@@ -272,7 +282,7 @@ const Cart: React.FC = () => {
                                     </Text>
                                     <Space size={8} wrap>
                                       <Tag
-                                        color="blue"
+                                        color={token.colorPrimary}
                                         style={{
                                           borderRadius: 20,
                                           padding: "4px 12px",
@@ -281,7 +291,7 @@ const Cart: React.FC = () => {
                                         {item.color}
                                       </Tag>
                                       <Tag
-                                        color="purple"
+                                        color={token.colorInfo}
                                         style={{
                                           borderRadius: 20,
                                           padding: "4px 12px",
@@ -290,7 +300,7 @@ const Cart: React.FC = () => {
                                         {item.storage}
                                       </Tag>
                                       <Tag
-                                        color="#13c2c2"
+                                        color={token.colorSuccess}
                                         style={{
                                           borderRadius: 20,
                                           padding: "4px 12px",
@@ -415,7 +425,7 @@ const Cart: React.FC = () => {
               className="cart-summary-card"
               style={{
                 borderRadius: 16,
-                boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
+                boxShadow: token.boxShadowTertiary,
                 border: "none",
                 position: "sticky",
                 top: 24,
@@ -444,7 +454,10 @@ const Cart: React.FC = () => {
                 </Row>
                 <Row justify="space-between">
                   <Text style={{ fontSize: 16 }}>Giảm giá:</Text>
-                  <Text strong style={{ fontSize: 16, color: "#52c41a" }}>
+                  <Text
+                    strong
+                    style={{ fontSize: 16, color: token.colorSuccess }}
+                  >
                     0 đ
                   </Text>
                 </Row>
@@ -471,9 +484,9 @@ const Cart: React.FC = () => {
                     background:
                       selectedItems.length === 0
                         ? ""
-                        : "linear-gradient(135deg, #1890ff 0%, #096dd9 100%)",
+                        : `linear-gradient(135deg, ${token.colorPrimary} 0%, ${token.colorPrimaryActive} 100%)`,
                     border: "none",
-                    boxShadow: "0 8px 16px rgba(24, 144, 255, 0.3)",
+                    boxShadow: `0 8px 16px ${token.colorPrimaryBg}`,
                   }}
                 >
                   Đặt hàng ngay
@@ -489,15 +502,15 @@ const Cart: React.FC = () => {
                       size="small"
                       style={{
                         borderRadius: 12,
-                        background: "#f6ffed",
-                        border: "1px solid #b7eb8f",
+                        background: token.colorSuccessBg,
+                        border: `1px solid ${token.colorSuccessBorder}`,
                       }}
                     >
                       <Space>
                         <SafetyCertificateOutlined
-                          style={{ color: "#52c41a", fontSize: 18 }}
+                          style={{ color: token.colorSuccess, fontSize: 18 }}
                         />
-                        <Text style={{ color: "#52c41a" }}>
+                        <Text style={{ color: token.colorSuccess }}>
                           Bảo hành chính hãng 12 tháng
                         </Text>
                       </Space>
@@ -506,15 +519,15 @@ const Cart: React.FC = () => {
                       size="small"
                       style={{
                         borderRadius: 12,
-                        background: "#e6f7ff",
-                        border: "1px solid #91d5ff",
+                        background: token.colorInfoBg,
+                        border: `1px solid ${token.colorInfoBorder}`,
                       }}
                     >
                       <Space>
                         <GiftOutlined
-                          style={{ color: "#1890ff", fontSize: 18 }}
+                          style={{ color: token.colorInfo, fontSize: 18 }}
                         />
-                        <Text style={{ color: "#1890ff" }}>
+                        <Text style={{ color: token.colorInfo }}>
                           Miễn phí giao hàng cho đơn từ 2 triệu
                         </Text>
                       </Space>

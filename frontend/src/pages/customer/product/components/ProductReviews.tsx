@@ -1,327 +1,248 @@
-import { Row, Col, Card } from "antd";
-import { Rate, Typography, Tag, Button, Image } from "antd";
+import { Row, Col, Card, theme, Space, Empty } from "antd";
+import { Rate, Typography, Tag, Button } from "antd";
 import { Product } from "../../../../types";
+import dayjs from "dayjs";
+import RatingModal from "./RatingModal";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { useAuth } from "../../../../contexts/AuthContext";
+
+export interface RatingResponse {
+  ratings: Rating[];
+  averageRating: number;
+  totalRatings: number;
+  distribution: Distribution[];
+  purchasedCustomerIds: number[];
+}
+
+export interface Rating {
+  rating_id: number;
+  product_id: number;
+  customer_id: number;
+  rating: number;
+  created_at: string;
+  content: string;
+  customer: Customer;
+}
+
+export interface Customer {
+  customer_id: number;
+  full_name: string;
+}
+
+export interface Distribution {
+  _count: number;
+  rating: number;
+}
 
 const { Title, Text, Paragraph } = Typography;
+
 const ProductReviews = ({ product }: { product: Product }) => {
+  const { user } = useAuth();
+  const { data: ratingResponse, refetch } = useQuery({
+    queryKey: ["ratings", product.product_id],
+    queryFn: async () => {
+      const res = await axios.get<RatingResponse>(
+        `http://localhost:8080/api/v1/ratings/product/${product.product_id}`
+      );
+      return res.data;
+    },
+  });
+  const { token } = theme.useToken();
+  const [ratingModalVisible, setRatingModalVisible] = useState(false);
   return (
-    <Row style={{ paddingInline: "24px" }}>
+    <Row style={{ padding: token.padding }}>
       <Card
         style={{
-          marginTop: 16,
-          borderRadius: 12,
+          width: "100%",
+          marginTop: token.marginLG,
+          borderRadius: token.borderRadiusLG,
         }}
       >
-        <Title level={4} style={{ marginBottom: 16 }}>
+        <Title level={4} style={{ marginBottom: token.marginMD }}>
           Đánh giá và nhận xét từ khách hàng
         </Title>
 
-        <Row gutter={[24, 24]}>
+        <Row gutter={[token.marginXL, token.marginXL]}>
           <Col xs={24} md={8}>
-            <div style={{ textAlign: "center" }}>
-              <Title level={1} style={{ margin: 0, color: "#1890ff" }}>
-                4.8
+            <Space
+              direction="vertical"
+              style={{ width: "100%", textAlign: "center" }}
+            >
+              <Title level={1} style={{ margin: 0, color: token["yellow-6"] }}>
+                {ratingResponse?.averageRating.toFixed(1) === "0.0"
+                  ? "5.0"
+                  : ratingResponse?.averageRating.toFixed(1)}
               </Title>
               <Rate
+                value={
+                  ratingResponse?.averageRating === 0
+                    ? 5
+                    : ratingResponse?.averageRating
+                }
                 disabled
-                defaultValue={4.8}
                 allowHalf
-                style={{ fontSize: 16, marginBottom: 8 }}
+                style={{ fontSize: token.fontSizeLG }}
               />
-              <Text type="secondary">Dựa trên 128 đánh giá</Text>
+              <Text type="secondary">
+                Dựa trên {ratingResponse?.totalRatings} đánh giá
+              </Text>
 
-              <div style={{ marginTop: 16 }}>
-                <Row align="middle" style={{ marginBottom: 8 }}>
-                  <Col span={4}>
-                    <Text>5 sao</Text>
-                  </Col>
-                  <Col span={16}>
-                    <div
-                      style={{
-                        width: "100%",
-                        height: 8,
-                        backgroundColor: "#f0f0f0",
-                        borderRadius: 4,
-                      }}
-                    >
+              <Space
+                direction="vertical"
+                style={{ width: "100%", marginTop: token.marginMD }}
+              >
+                {[5, 4, 3, 2, 1].map((star) => (
+                  <Row key={star} align="middle" gutter={[token.marginSM, 0]}>
+                    <Col span={4}>
+                      <Text>{star} sao</Text>
+                    </Col>
+                    <Col span={16}>
                       <div
                         style={{
-                          width: "85%",
+                          width: "100%",
                           height: 8,
-                          backgroundColor: "#52c41a",
-                          borderRadius: 4,
+                          backgroundColor: token.colorBgContainerDisabled,
+                          borderRadius: token.borderRadiusLG,
                         }}
-                      />
-                    </div>
-                  </Col>
-                  <Col span={4} style={{ textAlign: "right" }}>
-                    <Text type="secondary">85%</Text>
-                  </Col>
-                </Row>
-
-                <Row align="middle" style={{ marginBottom: 8 }}>
-                  <Col span={4}>
-                    <Text>4 sao</Text>
-                  </Col>
-                  <Col span={16}>
-                    <div
-                      style={{
-                        width: "100%",
-                        height: 8,
-                        backgroundColor: "#f0f0f0",
-                        borderRadius: 4,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: "10%",
-                          height: 8,
-                          backgroundColor: "#52c41a",
-                          borderRadius: 4,
-                        }}
-                      />
-                    </div>
-                  </Col>
-                  <Col span={4} style={{ textAlign: "right" }}>
-                    <Text type="secondary">10%</Text>
-                  </Col>
-                </Row>
-
-                <Row align="middle" style={{ marginBottom: 8 }}>
-                  <Col span={4}>
-                    <Text>3 sao</Text>
-                  </Col>
-                  <Col span={16}>
-                    <div
-                      style={{
-                        width: "100%",
-                        height: 8,
-                        backgroundColor: "#f0f0f0",
-                        borderRadius: 4,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: "3%",
-                          height: 8,
-                          backgroundColor: "#faad14",
-                          borderRadius: 4,
-                        }}
-                      />
-                    </div>
-                  </Col>
-                  <Col span={4} style={{ textAlign: "right" }}>
-                    <Text type="secondary">3%</Text>
-                  </Col>
-                </Row>
-
-                <Row align="middle" style={{ marginBottom: 8 }}>
-                  <Col span={4}>
-                    <Text>2 sao</Text>
-                  </Col>
-                  <Col span={16}>
-                    <div
-                      style={{
-                        width: "100%",
-                        height: 8,
-                        backgroundColor: "#f0f0f0",
-                        borderRadius: 4,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: "1%",
-                          height: 8,
-                          backgroundColor: "#ff4d4f",
-                          borderRadius: 4,
-                        }}
-                      />
-                    </div>
-                  </Col>
-                  <Col span={4} style={{ textAlign: "right" }}>
-                    <Text type="secondary">1%</Text>
-                  </Col>
-                </Row>
-
-                <Row align="middle">
-                  <Col span={4}>
-                    <Text>1 sao</Text>
-                  </Col>
-                  <Col span={16}>
-                    <div
-                      style={{
-                        width: "100%",
-                        height: 8,
-                        backgroundColor: "#f0f0f0",
-                        borderRadius: 4,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: "1%",
-                          height: 8,
-                          backgroundColor: "#ff4d4f",
-                          borderRadius: 4,
-                        }}
-                      />
-                    </div>
-                  </Col>
-                  <Col span={4} style={{ textAlign: "right" }}>
-                    <Text type="secondary">1%</Text>
-                  </Col>
-                </Row>
-              </div>
-            </div>
+                      >
+                        <div
+                          style={{
+                            width: `${
+                              ((ratingResponse?.distribution.find(
+                                (d) => d.rating === star
+                              )?._count || 0) /
+                                (ratingResponse?.totalRatings || 1)) *
+                              100
+                            }%`,
+                            height: 8,
+                            backgroundColor:
+                              star >= 4
+                                ? token.colorSuccess
+                                : star === 3
+                                ? token.colorWarning
+                                : token.colorError,
+                            borderRadius: token.borderRadiusLG,
+                            transition: "width 0.3s ease",
+                          }}
+                        />
+                      </div>
+                    </Col>
+                    <Col span={4} style={{ textAlign: "right" }}>
+                      <Text type="secondary">
+                        {`${(
+                          ((ratingResponse?.distribution.find(
+                            (d) => d.rating === star
+                          )?._count || 0) /
+                            (ratingResponse?.totalRatings || 1)) *
+                          100
+                        ).toFixed(1)}%`}
+                      </Text>
+                    </Col>
+                  </Row>
+                ))}
+              </Space>
+            </Space>
           </Col>
 
           <Col xs={24} md={16}>
-            <div style={{ marginBottom: 24 }}>
-              <Button type="primary" style={{ borderRadius: 8 }}>
-                Viết đánh giá
-              </Button>
-            </div>
+            <Space direction="vertical" style={{ width: "100%" }}>
+              {ratingResponse?.purchasedCustomerIds.includes(
+                user?.customer_id!
+              ) &&
+                !ratingResponse?.ratings.find(
+                  (r) => r.customer_id === user?.customer_id
+                ) && (
+                  <Button
+                    type="primary"
+                    onClick={() => setRatingModalVisible(true)}
+                  >
+                    Đánh giá sản phẩm
+                  </Button>
+                )}
 
-            <div className="customer-reviews">
-              {/* Review 1 */}
-              <div
-                style={{
-                  marginBottom: 24,
-                  padding: 16,
-                  backgroundColor: "#f9f9f9",
-                  borderRadius: 8,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: 8,
-                  }}
-                >
-                  <div>
-                    <Text strong>Nguyễn Văn A</Text>
-                    <Rate
-                      disabled
-                      defaultValue={5}
-                      style={{ fontSize: 14, marginLeft: 8 }}
-                    />
-                  </div>
-                  <Text type="secondary">12/05/2023</Text>
-                </div>
-                <div>
-                  <Tag color="blue" style={{ marginBottom: 8 }}>
-                    Đã mua hàng
-                  </Tag>
-                  <Tag color="green">Phiên bản: Đen, 8GB, 256GB</Tag>
-                </div>
-                <Paragraph style={{ margin: "12px 0" }}>
-                  Sản phẩm rất tốt, đúng như mô tả. Pin trâu, màn hình đẹp,
-                  camera chụp rõ nét. Giao hàng nhanh và đóng gói cẩn thận. Rất
-                  hài lòng với sản phẩm này!
-                </Paragraph>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <Image.PreviewGroup>
-                    <Image
-                      width={80}
-                      height={80}
-                      src="https://placehold.co/80x80/png"
-                      style={{ objectFit: "cover", borderRadius: 4 }}
-                    />
-                    <Image
-                      width={80}
-                      height={80}
-                      src="https://placehold.co/80x80/png"
-                      style={{ objectFit: "cover", borderRadius: 4 }}
-                    />
-                  </Image.PreviewGroup>
-                </div>
+              <div className="customer-reviews">
+                {ratingResponse?.totalRatings === 0 ? (
+                  <Card>
+                    <Empty description="Không có đánh giá" />
+                  </Card>
+                ) : (
+                  <Space direction="vertical" style={{ width: "100%" }}>
+                    {ratingResponse?.ratings?.map((rating) => (
+                      <Card
+                        key={rating.rating_id}
+                        style={{
+                          borderRadius: token.borderRadiusLG,
+                          backgroundColor: token.colorBgContainer,
+                        }}
+                      >
+                        <Space direction="vertical" style={{ width: "100%" }}>
+                          <Row justify="space-between" align="middle">
+                            <Space>
+                              <Text strong>{rating.customer?.full_name}</Text>
+                              <Rate
+                                disabled
+                                defaultValue={rating.rating}
+                                style={{ fontSize: token.fontSizeSM }}
+                              />
+                            </Space>
+                            <Space>
+                              <Text type="secondary">
+                                {dayjs(rating.created_at).format("DD/MM/YYYY")}
+                              </Text>
+                              {rating.customer_id === user?.customer_id && (
+                                <Space>
+                                  <Button
+                                    type="text"
+                                    size="small"
+                                    onClick={() => {
+                                      // Handle edit
+                                    }}
+                                  >
+                                    Sửa
+                                  </Button>
+                                  <Button
+                                    type="text"
+                                    danger
+                                    size="small"
+                                    onClick={() => {
+                                      // Handle delete
+                                    }}
+                                  >
+                                    Xóa
+                                  </Button>
+                                </Space>
+                              )}
+                            </Space>
+                          </Row>
+                          <Tag color="blue">Đã mua hàng</Tag>
+                          <Paragraph
+                            style={{
+                              margin: `${token.marginSM}px 0`,
+                              color: token.colorText,
+                            }}
+                          >
+                            {rating.content}
+                          </Paragraph>
+                        </Space>
+                      </Card>
+                    ))}
+                  </Space>
+                )}
               </div>
-
-              {/* Review 2 */}
-              <div
-                style={{
-                  marginBottom: 24,
-                  padding: 16,
-                  backgroundColor: "#f9f9f9",
-                  borderRadius: 8,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: 8,
-                  }}
-                >
-                  <div>
-                    <Text strong>Trần Thị B</Text>
-                    <Rate
-                      disabled
-                      defaultValue={4}
-                      style={{ fontSize: 14, marginLeft: 8 }}
-                    />
-                  </div>
-                  <Text type="secondary">05/05/2023</Text>
-                </div>
-                <div>
-                  <Tag color="blue" style={{ marginBottom: 8 }}>
-                    Đã mua hàng
-                  </Tag>
-                  <Tag color="green">Phiên bản: Trắng, 8GB, 128GB</Tag>
-                </div>
-                <Paragraph style={{ margin: "12px 0" }}>
-                  Điện thoại chạy rất mượt, thiết kế đẹp. Chỉ tiếc là pin không
-                  được trâu như mong đợi. Camera chụp ảnh rất đẹp, đặc biệt là
-                  chế độ chụp đêm.
-                </Paragraph>
-              </div>
-
-              {/* Review 3 */}
-              <div
-                style={{
-                  marginBottom: 24,
-                  padding: 16,
-                  backgroundColor: "#f9f9f9",
-                  borderRadius: 8,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: 8,
-                  }}
-                >
-                  <div>
-                    <Text strong>Lê Văn C</Text>
-                    <Rate
-                      disabled
-                      defaultValue={5}
-                      style={{ fontSize: 14, marginLeft: 8 }}
-                    />
-                  </div>
-                  <Text type="secondary">28/04/2023</Text>
-                </div>
-                <div>
-                  <Tag color="blue" style={{ marginBottom: 8 }}>
-                    Đã mua hàng
-                  </Tag>
-                  <Tag color="green">Phiên bản: Xanh, 12GB, 256GB</Tag>
-                </div>
-                <Paragraph style={{ margin: "12px 0" }}>
-                  Quá tuyệt vời, đáng đồng tiền bát gạo. Hiệu năng mạnh mẽ, chơi
-                  game không giật lag. Màn hình hiển thị sắc nét, âm thanh to
-                  rõ. Rất hài lòng với sản phẩm này!
-                </Paragraph>
-              </div>
-
-              <div style={{ textAlign: "center" }}>
-                <Button type="default">Xem thêm đánh giá</Button>
-              </div>
-            </div>
+            </Space>
           </Col>
         </Row>
       </Card>
+      <RatingModal
+        visible={ratingModalVisible}
+        productId={product.product_id}
+        onClose={() => {
+          setRatingModalVisible(false);
+          refetch();
+        }}
+      />
     </Row>
   );
 };

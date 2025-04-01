@@ -11,19 +11,22 @@ import {
   List,
   Col,
   Row,
+  notification,
+  Popconfirm,
 } from "antd";
 import {
   UserOutlined,
   ShoppingOutlined,
   PlusOutlined,
-  EditOutlined,
   MailOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../../contexts/AuthContext";
 import AddAddressModal from "./components/AddAddressModal";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
+import axios from "axios";
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -33,15 +36,16 @@ const ProfilePage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const [form] = Form.useForm();
-  const [addressForm] = Form.useForm();
 
   const [searchParams] = useSearchParams();
 
+  const [notificationApi, notificationContextHolder] =
+    notification.useNotification();
   const tab = searchParams.get("tab") || "1";
 
   const navigate = useNavigate();
   // Fetch user data query
-  const { data: userData } = useQuery({
+  const { data: userData, refetch } = useQuery({
     queryKey: ["user", user?.customer_id],
     queryFn: async () => {
       const response = await fetch(
@@ -81,46 +85,67 @@ const ProfilePage: React.FC = () => {
           body: JSON.stringify(values),
         }
       );
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Failed to update profile");
+      } else {
+        refetch();
+        notificationApi.success({
+          message: "Đã cập nhật thông tin",
+        });
       }
-      return response.json();
     },
   });
 
   // Add address mutation
-  const addAddressMutation = useMutation({
-    mutationFn: async (values: any) => {
-      const response = await fetch(
-        `http://localhost:8080/api/v1/customers/${user?.customer_id}/addresses`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(values),
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to add address");
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      setIsModalVisible(false);
-      addressForm.resetFields();
-    },
-  });
 
   const onFinish = (values: any) => {
     updateProfileMutation.mutate(values);
   };
 
-  const handleAddAddress = (values: any) => {
-    addAddressMutation.mutate(values);
+  const handleUpdateAddress = async (addressId: number) => {
+    const respone = await axios.put(
+      `http://localhost:8080/api/v1/customers/addresses/${addressId}`,
+      {
+        is_default: true,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    if (respone.status === 200) {
+      refetch();
+      notificationApi.success({
+        message: "Đã cập nhật địa chỉ mặc định",
+      });
+    } else {
+      notificationApi.error({
+        message: "Lỗi cập nhật địa chỉ mặc định",
+      });
+    }
   };
 
+  const handleDeleteAddress = async (addressId: number) => {
+    const respone = await axios.delete(
+      `http://localhost:8080/api/v1/customers/addresses/${addressId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    if (respone.status === 204) {
+      refetch();
+      notificationApi.success({
+        message: "Đã xóa địa chỉ",
+      });
+    } else {
+      notificationApi.error({
+        message: "Lỗi xóa địa chỉ",
+      });
+    }
+  };
   const orderColumns = [
     {
       title: "Mã đơn hàng",
@@ -191,9 +216,9 @@ const ProfilePage: React.FC = () => {
     },
   ];
 
-  console.log(userData);
   return (
     <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
+      {notificationContextHolder}
       <Card>
         <Title level={2}>Tài khoản của tôi</Title>
         <Tabs defaultActiveKey={tab}>
@@ -293,15 +318,20 @@ const ProfilePage: React.FC = () => {
                         border: "1px solid #e8e8e8",
                       }}
                       actions={[
-                        <Button
-                          type="text"
-                          icon={<EditOutlined />}
-                          onClick={() => {
-                            /* Handle edit */
-                          }}
-                        >
-                          Sửa
-                        </Button>,
+                        !address.is_default && (
+                          <Popconfirm
+                            title="Bạn có chắc chắn muốn xóa địa chỉ này không?"
+                            onConfirm={() =>
+                              handleDeleteAddress(address.address_id)
+                            }
+                          >
+                            <Button
+                              type="text"
+                              icon={<DeleteOutlined />}
+                              danger
+                            />
+                          </Popconfirm>
+                        ),
                       ]}
                     >
                       <List.Item.Meta
@@ -334,7 +364,9 @@ const ProfilePage: React.FC = () => {
                                 <Button
                                   type="primary"
                                   size="small"
-                                  onClick={() => {}}
+                                  onClick={() =>
+                                    handleUpdateAddress(address.address_id)
+                                  }
                                 >
                                   Đặt làm địa chỉ mặc định
                                 </Button>
@@ -377,6 +409,9 @@ const ProfilePage: React.FC = () => {
         </Tabs>
       </Card>
       <AddAddressModal
+        onAddAddress={() => {
+          refetch();
+        }}
         isModalVisible={isModalVisible}
         setIsModalVisible={setIsModalVisible}
       />

@@ -15,7 +15,6 @@ const ProductDescriptions = ({ product }: { product: Product }) => {
         <Card
           style={{
             borderRadius: 12,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
           }}
         >
           <Tabs
@@ -61,7 +60,7 @@ const ProductDescriptions = ({ product }: { product: Product }) => {
                         </div>
                         <div style={{ textAlign: "center", marginTop: "16px" }}>
                           <Button
-                            type="primary"
+                            variant="outlined"
                             onClick={() => setSpecsModalVisible(true)}
                           >
                             Xem thêm
@@ -139,7 +138,7 @@ const ProductDescriptions = ({ product }: { product: Product }) => {
                         </div>
                         <div style={{ textAlign: "center", marginTop: "16px" }}>
                           <Button
-                            type="primary"
+                            variant="outlined"
                             onClick={() => setArticleModalVisible(true)}
                           >
                             Xem thêm

@@ -263,6 +263,14 @@ export class ProductController {
       });
     }
   };
+
+  getSuggestions = async (req: Request, res: Response) => {
+    const { keyword } = req.query;
+    const suggestions = await this.productService.getSuggestions(
+      keyword as string
+    );
+    res.json(suggestions);
+  };
 }
 
 export default new ProductController();

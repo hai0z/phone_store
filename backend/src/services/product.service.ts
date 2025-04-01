@@ -4,12 +4,15 @@ import { ProductImages, Products, ProductVariants } from "@prisma/client";
 export class ProductService extends BaseService {
   async getAllProducts() {
     return this.prisma.products.findMany({
-      include: {
+      select: {
+        product_id: true,
+        product_name: true,
         category: true,
         brand: true,
         variants: true,
         ratings: true,
         images: true,
+        specs: true,
       },
     });
   }
@@ -17,7 +20,8 @@ export class ProductService extends BaseService {
   async getProductById(productId: number) {
     return this.prisma.products.findUnique({
       where: { product_id: productId },
-      include: {
+      select: {
+        product_id: true,
         category: true,
         brand: true,
         images: {
@@ -32,8 +36,16 @@ export class ProductService extends BaseService {
             ram: true,
           },
         },
-
-        ratings: true,
+        sold_count: true,
+        ratings: {
+          include: {
+            customer: true,
+          },
+        },
+        product_name: true,
+        description: true,
+        article: true,
+        specs: true,
       },
     });
   }
@@ -93,6 +105,21 @@ export class ProductService extends BaseService {
   async deleteProductVariants(variantId: number) {
     return this.prisma.productVariants.delete({
       where: { variant_id: variantId },
+    });
+  }
+
+  async getSuggestions(keyword: string) {
+    return this.prisma.products.findMany({
+      where: {
+        product_name: {
+          contains: keyword,
+        },
+      },
+      include: {
+        images: true,
+        variants: true,
+        ratings: true,
+      },
     });
   }
 }

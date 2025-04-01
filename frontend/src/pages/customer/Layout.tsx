@@ -16,6 +16,7 @@ import {
   Dropdown,
   MenuProps,
   Avatar,
+  AutoComplete,
 } from "antd";
 import {
   ShoppingCartOutlined,
@@ -33,6 +34,9 @@ import {
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useCartStore } from "../../store/cartStore";
 import { useAuth } from "../../contexts/AuthContext";
+import { Product } from "../../types";
+import axios from "axios";
+import ChatBot from "../../components/chatbot/ChatBot";
 
 const { Header, Content, Footer } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -45,7 +49,7 @@ const CustomerLayout: React.FC = () => {
   const { user, logout } = useAuth();
 
   const [current, setCurrent] = useState("mail");
-
+  const [visible, setVisible] = useState(false);
   const onClick: MenuProps["onClick"] = (e) => {
     console.log("click ", e);
     setCurrent(e.key);
@@ -117,6 +121,59 @@ const CustomerLayout: React.FC = () => {
     },
   ];
 
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = async (value: string) => {
+    if (value.trim()) {
+      const response = await axios.get(
+        `http://localhost:8080/api/v1/products/suggestions?keyword=${value}`
+      );
+      setSuggestions(response.data);
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  useEffect(() => {
+    handleSearch(searchQuery);
+  }, [searchQuery]);
+
+  const handleSearchSelect = (_: string, option: any) => {
+    navigate(`/dtdd/${option.key}`);
+  };
+
+  const options = suggestions.map((product) => ({
+    value: product.product_name,
+    key: product.product_id,
+    label: (
+      <div style={{ display: "flex", alignItems: "center", padding: "8px 0" }}>
+        <img
+          src={
+            product.images && product.images.length > 0
+              ? product.images[0].image_url
+              : ""
+          }
+          alt={product.product_name}
+          style={{
+            width: 40,
+            height: 40,
+            marginRight: 12,
+            objectFit: "contain",
+          }}
+        />
+        <div>
+          <div>{product.product_name}</div>
+          {/* <div style={{ fontSize: "12px", color: "#ff4d4f" }}>
+            {product.variants && product.variants.length > 0
+              ? `${product.variants[0].sale_price.toLocaleString("vi-VN")}₫`
+              : ""}
+          </div> */}
+        </div>
+      </div>
+    ),
+  }));
+
   return (
     <Layout>
       <Affix>
@@ -156,13 +213,15 @@ const CustomerLayout: React.FC = () => {
 
             <div className="header-actions">
               <Space size="middle" className="desktop-actions">
-                <Input
-                  placeholder="Tìm kiếm sản phẩm..."
-                  allowClear
+                <AutoComplete
                   style={{ width: 300 }}
-                  size="large"
-                  suffix={<SearchOutlined />}
-                />
+                  options={options}
+                  onSelect={handleSearchSelect}
+                  onSearch={(value) => setSearchQuery(value)}
+                  placeholder="Tìm kiếm sản phẩm..."
+                >
+                  <Input size="large" suffix={<SearchOutlined />} allowClear />
+                </AutoComplete>
                 <Tooltip title="Giỏ hàng">
                   <Badge count={getTotalItems()} size="small">
                     <Button
@@ -360,10 +419,14 @@ const CustomerLayout: React.FC = () => {
       </Footer>
 
       <FloatButton.Group>
-        <FloatButton icon={<CustomerServiceOutlined />} tooltip="Hỗ trợ" />
+        <FloatButton
+          icon={<CustomerServiceOutlined />}
+          tooltip="Hỗ trợ"
+          onClick={() => setVisible(true)}
+        />
         <FloatButton.BackTop visibilityHeight={100} />
       </FloatButton.Group>
-
+      <ChatBot visible={visible} setVisible={setVisible} />
       <style>
         {`
           .top-bar {

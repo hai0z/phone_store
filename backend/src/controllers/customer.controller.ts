@@ -90,7 +90,7 @@ class CustomerController {
 
   createAddress = async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = parseInt(req.params.customerId);
       const address = await this.customerService.createAddress(id, req.body);
       res.status(201).json(address);
     } catch (error: any) {
@@ -107,7 +107,7 @@ class CustomerController {
         customerId,
         req.body
       );
-      res.json(customer);
+      res.status(200).json(customer);
     } catch (error) {
       res.status(500).json({ message: "Error updating customer", error });
     }
@@ -120,7 +120,7 @@ class CustomerController {
         addressId,
         req.body
       );
-      res.json(address);
+      res.status(200).json(address);
     } catch (error) {
       res.status(500).json({ message: "Error updating address", error });
     }
@@ -140,7 +140,9 @@ class CustomerController {
     try {
       const addressId = parseInt(req.params.addressId);
       await this.customerService.deleteAddress(addressId);
-      res.status(204).send();
+      res.status(204).send({
+        message: "Address deleted successfully",
+      });
     } catch (error) {
       res.status(500).json({ message: "Error deleting address", error });
     }

@@ -29,8 +29,7 @@ export interface Product {
   category?: Category;
   brand?: Brand;
   variants?: ProductVariant[];
-  comments?: Comment[];
-  ratings?: Rating[];
+  ratings: Rating[];
   images?: ProductImage[];
 }
 
@@ -152,6 +151,7 @@ export interface Rating {
   created_at: Date;
   product?: Product;
   customer?: Customer;
+  content?: string;
 }
 
 export interface Location {

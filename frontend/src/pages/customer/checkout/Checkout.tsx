@@ -34,12 +34,14 @@ import {
   PhoneOutlined,
   QuestionCircleOutlined,
   FileTextOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 
 import { useCartStore } from "../../../store/cartStore";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useAuth } from "../../../contexts/AuthContext";
+import AddAddressModal from "../profile/components/AddAddressModal";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -91,6 +93,8 @@ const Checkout: React.FC = () => {
   const { user } = useAuth();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const { isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["cartItems"],
@@ -329,67 +333,81 @@ const Checkout: React.FC = () => {
                 ]}
               >
                 <Space direction="vertical" style={{ width: "100%" }}>
-                  {userData?.addresses?.map((address: any) => (
-                    <Card
-                      key={address.address_id}
-                      style={{
-                        marginBottom: 16,
-                        borderRadius: 8,
-                        background:
-                          selectedAddress === address.address_id
-                            ? "#e6f7ff"
-                            : "#f5f5f5",
-                        border:
-                          selectedAddress === address.address_id
-                            ? `1px solid ${token.colorPrimary}`
-                            : "1px solid #e8e8e8",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleSelectAddress(address.address_id)}
+                  {userData?.addresses?.length === 0 ? (
+                    <Button
+                      type="dashed"
+                      icon={<PlusOutlined />}
+                      onClick={() => setIsModalVisible(true)}
+                      style={{ width: "100%", height: 100 }}
                     >
-                      <Row align="middle" gutter={16}>
-                        <Col>
-                          <EnvironmentOutlined
-                            style={{
-                              fontSize: 24,
-                              color:
-                                selectedAddress === address.address_id
-                                  ? token.colorPrimary
-                                  : token.colorTextSecondary,
-                            }}
-                          />
-                        </Col>
-                        <Col flex="auto">
-                          <Row>
-                            <Col span={24}>
-                              <Typography.Text strong style={{ fontSize: 16 }}>
-                                {userData.full_name}
-                                {address.is_default && (
-                                  <Tag color="blue" style={{ marginLeft: 8 }}>
-                                    Địa chỉ mặc định
-                                  </Tag>
-                                )}
-                              </Typography.Text>
-                            </Col>
-                            <Col span={24}>
-                              <Typography.Text type="secondary">
-                                <PhoneOutlined style={{ marginRight: 8 }} />
-                                {userData.phone}
-                              </Typography.Text>
-                            </Col>
-                            <Col span={24}>
-                              <Typography.Text type="secondary">
-                                <EnvironmentOutlined
-                                  style={{ marginRight: 8 }}
-                                />
-                                {address.address}
-                              </Typography.Text>
-                            </Col>
-                          </Row>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
+                      Thêm địa chỉ mới
+                    </Button>
+                  ) : (
+                    userData?.addresses?.map((address: any) => (
+                      <Card
+                        key={address.address_id}
+                        style={{
+                          marginBottom: 16,
+                          borderRadius: 8,
+                          background:
+                            selectedAddress === address.address_id
+                              ? "#e6f7ff"
+                              : "#f5f5f5",
+                          border:
+                            selectedAddress === address.address_id
+                              ? `1px solid ${token.colorPrimary}`
+                              : "1px solid #e8e8e8",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => handleSelectAddress(address.address_id)}
+                      >
+                        <Row align="middle" gutter={16}>
+                          <Col>
+                            <EnvironmentOutlined
+                              style={{
+                                fontSize: 24,
+                                color:
+                                  selectedAddress === address.address_id
+                                    ? token.colorPrimary
+                                    : token.colorTextSecondary,
+                              }}
+                            />
+                          </Col>
+                          <Col flex="auto">
+                            <Row>
+                              <Col span={24}>
+                                <Typography.Text
+                                  strong
+                                  style={{ fontSize: 16 }}
+                                >
+                                  {userData.full_name}
+                                  {address.is_default && (
+                                    <Tag color="blue" style={{ marginLeft: 8 }}>
+                                      Địa chỉ mặc định
+                                    </Tag>
+                                  )}
+                                </Typography.Text>
+                              </Col>
+                              <Col span={24}>
+                                <Typography.Text type="secondary">
+                                  <PhoneOutlined style={{ marginRight: 8 }} />
+                                  {userData.phone}
+                                </Typography.Text>
+                              </Col>
+                              <Col span={24}>
+                                <Typography.Text type="secondary">
+                                  <EnvironmentOutlined
+                                    style={{ marginRight: 8 }}
+                                  />
+                                  {address.address}
+                                </Typography.Text>
+                              </Col>
+                            </Row>
+                          </Col>
+                        </Row>
+                      </Card>
+                    ))
+                  )}
                 </Space>
               </Form.Item>
 
@@ -867,6 +885,13 @@ const Checkout: React.FC = () => {
           </div>
         </div>
       </Modal>
+      <AddAddressModal
+        isModalVisible={isModalVisible}
+        setIsModalVisible={() => setIsModalVisible(!isModalVisible)}
+        onAddAddress={() => {
+          refetch();
+        }}
+      />
     </div>
   );
 };

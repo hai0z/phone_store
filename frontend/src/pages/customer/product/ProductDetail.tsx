@@ -33,7 +33,7 @@ import {
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ProductImage, ProductVariant } from "../../../types";
+import { ProductImage, ProductVariant, Rating } from "../../../types";
 import { CarouselRef } from "antd/es/carousel";
 import ProductDetailSkeleton from "./components/ProductDetailSkeleton";
 import ProductDescriptions from "./components/ProductDescriptions";
@@ -342,7 +342,6 @@ const ProductDetail: React.FC = () => {
                 overflow: "hidden",
                 borderRadius: 12,
                 marginBottom: 16,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
               }}
             >
               <div
@@ -404,7 +403,6 @@ const ProductDetail: React.FC = () => {
                     icon={<ShareAltOutlined />}
                     style={{
                       background: "rgba(255,255,255,0.9)",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                     }}
                   />
                   <Button
@@ -412,7 +410,6 @@ const ProductDetail: React.FC = () => {
                     icon={<HeartOutlined />}
                     style={{
                       background: "rgba(255,255,255,0.9)",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                     }}
                   />
                 </div>
@@ -476,7 +473,6 @@ const ProductDetail: React.FC = () => {
             className="product-info-card"
             style={{
               borderRadius: 12,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
           >
             <Space direction="vertical" size="large" style={{ width: "100%" }}>
@@ -541,12 +537,24 @@ const ProductDetail: React.FC = () => {
                     alignItems: "center",
                   }}
                 >
-                  <Rate disabled defaultValue={4.5} style={{ fontSize: 16 }} />
+                  <Rate
+                    disabled
+                    defaultValue={
+                      product?.ratings?.length > 0
+                        ? product?.ratings?.reduce(
+                            (acc: number, rating: Rating) =>
+                              acc + rating.rating,
+                            0
+                          ) / product?.ratings?.length
+                        : 5
+                    }
+                    style={{ fontSize: 16 }}
+                  />
                   <Text type="secondary" style={{ marginLeft: 8 }}>
-                    (120 đánh giá)
+                    ({product?.ratings?.length} đánh giá)
                   </Text>
                   <Divider type="vertical" style={{ margin: "0 12px" }} />
-                  <Text type="secondary">Đã bán: 1.2k</Text>
+                  <Text type="secondary">Đã bán: {product?.sold_count}</Text>
                 </div>
               </div>
 
@@ -653,7 +661,6 @@ const ProductDetail: React.FC = () => {
                     background: "linear-gradient(145deg, #f8f9fa, #e9ecef)",
                     padding: 20,
                     borderRadius: 12,
-                    boxShadow: "inset 0 1px 3px rgba(0,0,0,0.05)",
                   }}
                 >
                   <Title
@@ -761,7 +768,6 @@ const ProductDetail: React.FC = () => {
                               borderRadius: "50%",
                               backgroundColor: color.hex,
                               border: "1px solid #ddd",
-                              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                             }}
                           />
                           <span>{color.color_name}</span>
@@ -907,7 +913,6 @@ const ProductDetail: React.FC = () => {
             style={{
               marginTop: 16,
               borderRadius: 12,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
             }}
           >
             <Space direction="vertical" size="middle" style={{ width: "100%" }}>
