@@ -266,6 +266,9 @@ const OrderDetail = () => {
                 {getStatusText(order.status)}
               </Tag>
             </Descriptions.Item>
+            <Descriptions.Item label="Ghi chú">
+              {order.note || "Không có ghi chú"}
+            </Descriptions.Item>
             <Descriptions.Item label="Phương thức thanh toán">
               <Tag color="blue">
                 {order.paymentMethod === "cod"
@@ -296,14 +299,29 @@ const OrderDetail = () => {
               <Text>
                 Tổng tiền hàng:{" "}
                 <Text strong>
-                  {order.total_amount.toLocaleString("vi-VN")}đ
+                  {order.orderDetails
+                    .reduce(
+                      (sum: number, item: any) =>
+                        sum + item.price * item.quantity,
+                      0
+                    )
+                    .toLocaleString("vi-VN")}
+                  đ
                 </Text>
               </Text>
               {order.voucher && (
                 <Text>
-                  Giảm giá:{" "}
+                  Giảm giá ({order.voucher.code}):{" "}
                   <Text strong type="success">
-                    -{order.discount?.toLocaleString("vi-VN")}đ
+                    -
+                    {(
+                      order.orderDetails.reduce(
+                        (sum: number, item: any) =>
+                          sum + item.price * item.quantity,
+                        0
+                      ) - order.total_amount
+                    ).toLocaleString("vi-VN")}
+                    đ
                   </Text>
                 </Text>
               )}
@@ -402,12 +420,26 @@ const OrderDetail = () => {
             <div style={{ textAlign: "right", marginTop: "20px" }}>
               <p>
                 <strong>Tổng tiền hàng:</strong>{" "}
-                {order.total_amount.toLocaleString("vi-VN")}đ
+                {order.orderDetails
+                  .reduce(
+                    (sum: number, item: any) =>
+                      sum + item.price * item.quantity,
+                    0
+                  )
+                  .toLocaleString("vi-VN")}
+                đ
               </p>
               {order.voucher && (
                 <p>
-                  <strong>Giảm giá:</strong> -
-                  {order.discount?.toLocaleString("vi-VN")}đ
+                  <strong>Giảm giá ({order.voucher.code}):</strong> -
+                  {(
+                    order.orderDetails.reduce(
+                      (sum: number, item: any) =>
+                        sum + item.price * item.quantity,
+                      0
+                    ) - order.total_amount
+                  ).toLocaleString("vi-VN")}
+                  đ
                 </p>
               )}
               <p style={{ fontSize: "18px" }}>

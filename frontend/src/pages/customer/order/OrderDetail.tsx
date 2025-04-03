@@ -244,6 +244,16 @@ const OrderDetail = () => {
                 : "Thanh toán online qua VNPay"}
             </Space>
           </Descriptions.Item>
+          {orderData.voucher && (
+            <Descriptions.Item label="Mã giảm giá">
+              <Tag
+                color="green"
+                style={{ padding: "4px 8px", fontSize: "14px" }}
+              >
+                {orderData.voucher.code}
+              </Tag>
+            </Descriptions.Item>
+          )}
         </Descriptions>
 
         <Divider />
@@ -300,10 +310,48 @@ const OrderDetail = () => {
             borderRadius: "8px",
           }}
         >
-          <Title level={3} style={{ color: token.colorError }}></Title>
-          <Title level={3} style={{ color: token.colorError }}>
-            Tổng tiền: {orderData.total_amount.toLocaleString("vi-VN")}đ
-          </Title>
+          <Space direction="vertical" align="end">
+            <Text style={{ fontSize: "16px" }}>
+              Tổng tiền hàng:{" "}
+              <Text strong>
+                {orderData.orderDetails
+                  .reduce(
+                    (sum: number, item: any) =>
+                      sum + item.price * item.quantity,
+                    0
+                  )
+                  .toLocaleString("vi-VN")}
+                đ
+              </Text>
+            </Text>
+
+            {orderData.voucher && (
+              <Text style={{ fontSize: "16px" }}>
+                Giảm giá ({orderData.voucher.code}):{" "}
+                <Text strong type="success">
+                  -
+                  {(
+                    orderData.orderDetails.reduce(
+                      (sum: number, item: any) =>
+                        sum + item.price * item.quantity,
+                      0
+                    ) - orderData.total_amount
+                  ).toLocaleString("vi-VN")}
+                  đ
+                </Text>
+              </Text>
+            )}
+
+            <Text style={{ fontSize: "18px", marginTop: "8px" }}>
+              Tổng thanh toán:{" "}
+              <Text
+                strong
+                style={{ fontSize: "24px", color: token.colorError }}
+              >
+                {orderData.total_amount.toLocaleString("vi-VN")}đ
+              </Text>
+            </Text>
+          </Space>
         </div>
         <Divider />
         <Flex justify="end" gap="middle">

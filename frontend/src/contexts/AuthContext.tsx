@@ -12,6 +12,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  admin: User | null;
   token: string | null;
   loading: boolean;
   login: (
@@ -45,6 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [admin, setAdmin] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -78,8 +80,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (response.ok) {
         const userData = await response.json();
-        setUser(userData);
-        setToken(token);
+
+        if (userData.role === "admin") {
+          setAdmin(userData);
+        } else {
+          setUser(userData);
+        }
       } else {
         logout();
       }
@@ -122,7 +128,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error(data.message || "Đăng nhập thất bại");
       }
 
-      setUser(data.user);
+      if (type === "admin") {
+        setAdmin(data.user);
+      } else {
+        setUser(data.user);
+      }
       setToken(data.token);
       localStorage.setItem("token", data.token);
     } catch (error: any) {
@@ -210,6 +220,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     forgotPassword,
     resetPassword,
     isAuthenticated: !!token,
+    admin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

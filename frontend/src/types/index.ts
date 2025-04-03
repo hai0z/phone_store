@@ -108,6 +108,7 @@ export interface Voucher {
   used_count: number;
   start_date?: Date;
   expiry_date?: Date;
+  max_discount_value?: number;
   orders?: Order[];
 }
 

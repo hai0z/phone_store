@@ -15,6 +15,9 @@ export class CustomerService extends BaseService {
       where: { customer_id: customerId },
       include: {
         orders: {
+          orderBy: {
+            order_date: "desc",
+          },
           include: {
             orderDetails: {
               include: {

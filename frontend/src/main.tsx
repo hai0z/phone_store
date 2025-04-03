@@ -21,8 +21,8 @@ createRoot(document.getElementById("root")!).render(
           },
         }}
       >
-        <AdminRouter />
         <AuthProvider>
+          <AdminRouter />
           <CustomerRouter />
         </AuthProvider>
       </ConfigProvider>

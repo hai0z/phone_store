@@ -8,6 +8,14 @@ import {
   Input,
   Typography,
   Card,
+  Row,
+  Col,
+  Tooltip,
+  Badge,
+  Avatar,
+  Divider,
+  Statistic,
+  Spin,
 } from "antd";
 import {
   EditOutlined,
@@ -15,13 +23,19 @@ import {
   SearchOutlined,
   PlusOutlined,
   TagOutlined,
+  FileImageOutlined,
+  InfoCircleOutlined,
+  SortAscendingOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { useState } from "react";
+import { theme } from "antd";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
+const { useToken } = theme;
 
 interface Brand {
   brand_id: number;
@@ -32,6 +46,8 @@ interface Brand {
 const BrandList = () => {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
+  const { token } = useToken();
+  const [searchText, setSearchText] = useState<string>("");
 
   const {
     data: brands,
@@ -65,38 +81,65 @@ const BrandList = () => {
     console.log("Table params:", { pagination, filters, sorter });
   };
 
+  const filteredBrands = searchText
+    ? brands?.filter((brand: Brand) =>
+        brand.brand_name.toLowerCase().includes(searchText.toLowerCase())
+      )
+    : brands;
+
   const columns: ColumnsType<Brand> = [
     {
       title: "ID",
       dataIndex: "brand_id",
       key: "brand_id",
       sorter: (a, b) => a.brand_id - b.brand_id,
-      render: (id) => <Text strong>#{id.toString().padStart(3, "0")}</Text>,
-    },
-    {
-      title: "Logo",
-      key: "image",
-      render: (_, record) => (
-        <Image
-          width={60}
-          height={60}
-          src={record.image_url}
-          alt={record.brand_name}
-          fallback="https://www.mangobeds.com/images/image-fallback.jpg"
-          style={{ objectFit: "contain", borderRadius: "8px" }}
+      render: (id) => (
+        <Badge
+          count={id}
+          style={{
+            backgroundColor: token.colorPrimary,
+            fontSize: "12px",
+            fontWeight: "bold",
+          }}
+          overflowCount={999}
         />
       ),
+      width: 80,
+      align: "center",
     },
     {
-      title: "Tên thương hiệu",
+      title: "Logo thương hiệu",
+      key: "image",
+      render: (_, record) => (
+        <Avatar
+          shape="square"
+          size={64}
+          src={record.image_url}
+          icon={<FileImageOutlined />}
+          style={{
+            objectFit: "contain",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            backgroundColor: "#f0f0f0",
+          }}
+        />
+      ),
+      width: 120,
+      align: "center",
+    },
+    {
+      title: (
+        <Space>
+          <TagOutlined />
+          <span>Tên thương hiệu</span>
+        </Space>
+      ),
       dataIndex: "brand_name",
       key: "brand_name",
       sorter: (a, b) => a.brand_name.localeCompare(b.brand_name),
       render: (text) => (
-        <Space>
-          <TagOutlined style={{ color: "#1890ff" }} />
-          <Text strong>{text}</Text>
-        </Space>
+        <Text strong style={{ fontSize: "16px" }}>
+          {text}
+        </Text>
       ),
       filterDropdown: ({
         setSelectedKeys,
@@ -144,68 +187,138 @@ const BrandList = () => {
           .includes((value as string).toLowerCase()),
     },
     {
-      title: "Hành động",
+      title: (
+        <Space>
+          <InfoCircleOutlined />
+          <span>Hành động</span>
+        </Space>
+      ),
       key: "actions",
       render: (_, record) => (
         <Space size="middle">
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => navigate(`/admin/brands/edit/${record.brand_id}`)}
-          />
+          <Tooltip title="Chỉnh sửa thương hiệu">
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => navigate(`/admin/brands/edit/${record.brand_id}`)}
+              style={{ borderRadius: "4px" }}
+            />
+          </Tooltip>
           <Popconfirm
             title="Xóa thương hiệu"
             description="Bạn có chắc chắn muốn xóa thương hiệu này?"
             onConfirm={() => handleDelete(record.brand_id)}
             okText="Đồng ý"
             cancelText="Hủy"
+            icon={<DeleteOutlined style={{ color: "red" }} />}
+            placement="left"
           >
-            <Button danger icon={<DeleteOutlined />} />
+            <Tooltip title="Xóa thương hiệu">
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                style={{ borderRadius: "4px" }}
+              />
+            </Tooltip>
           </Popconfirm>
         </Space>
       ),
+      width: 120,
+      align: "center",
     },
   ];
 
   return (
     <div style={{ padding: "24px" }}>
       {contextHolder}
-      <Card style={{ borderRadius: "8px" }}>
-        <div
-          style={{
-            marginBottom: "16px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Title level={4} style={{ margin: 0 }}>
-            <TagOutlined style={{ marginRight: "8px" }} />
-            Quản lý thương hiệu
-          </Title>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => navigate("/admin/brands/add")}
+      <Row gutter={[24, 24]}>
+        <Col span={24}>
+          <Card
+            style={{
+              borderRadius: "8px",
+            }}
           >
-            Thêm thương hiệu mới
-          </Button>
-        </div>
-        <Table
-          columns={columns}
-          dataSource={brands}
-          rowKey="brand_id"
-          loading={isLoading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Tổng số ${total} thương hiệu`,
-          }}
-          onChange={handleTableChange}
-          bordered
-          size="middle"
-        />
-      </Card>
+            <Row
+              align="middle"
+              justify="space-between"
+              style={{ marginBottom: "24px" }}
+            >
+              <Col>
+                <Space direction="vertical" size={0}>
+                  <Space align="center">
+                    <Avatar
+                      icon={<TagOutlined />}
+                      style={{
+                        backgroundColor: token.colorPrimary,
+                        marginRight: "8px",
+                      }}
+                    />
+                    <Title level={4} style={{ margin: 0 }}>
+                      Quản lý thương hiệu
+                    </Title>
+                  </Space>
+                  <Paragraph
+                    style={{
+                      color: token.colorTextSecondary,
+                      marginLeft: "40px",
+                    }}
+                  >
+                    Quản lý danh sách các thương hiệu điện thoại
+                  </Paragraph>
+                </Space>
+              </Col>
+              <Col>
+                <Space>
+                  <Input
+                    placeholder="Tìm kiếm thương hiệu"
+                    prefix={<SearchOutlined />}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    style={{ width: 250, borderRadius: "6px" }}
+                    allowClear
+                  />
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => navigate("/admin/brands/add")}
+                    style={{
+                      borderRadius: "6px",
+                      boxShadow: "0 2px 0 rgba(0, 0, 0, 0.045)",
+                    }}
+                  >
+                    Thêm thương hiệu mới
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+
+            <Divider style={{ margin: "0 0 24px 0" }} />
+
+            {isLoading ? (
+              <div style={{ textAlign: "center", padding: "40px 0" }}>
+                <Spin size="large" tip="Đang tải dữ liệu..." />
+              </div>
+            ) : (
+              <Table
+                columns={columns}
+                dataSource={filteredBrands}
+                rowKey="brand_id"
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  showTotal: (total) => `Tổng số ${total} thương hiệu`,
+                  showQuickJumper: true,
+                  style: { marginTop: "16px" },
+                }}
+                onChange={handleTableChange}
+                bordered={false}
+                size="middle"
+                rowClassName={() => "table-row-hover"}
+                style={{ overflowX: "auto" }}
+              />
+            )}
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };

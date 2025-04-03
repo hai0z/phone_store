@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "../pages/admin/Layout";
 import Dashboard from "../pages/admin/DashBoard";
 import AddProduct from "../pages/admin/product/add/AddProduct";
@@ -18,10 +18,28 @@ import OrderEdit from "../pages/admin/order/Edit";
 import RevenueAnalytics from "../pages/admin/stats/RevenueAnalytics";
 import CustomerList from "../pages/admin/customer/CustomerList";
 import CustomerDetail from "../pages/admin/customer/CustomerDetail";
+import VoucherList from "../pages/admin/voucher/VoucherList";
+import AddVoucher from "../pages/admin/voucher/AddVoucher";
+import EditVoucher from "../pages/admin/voucher/EditVoucher";
+import AdminLogin from "../pages/admin/login/Login";
+import { useAuth } from "../contexts/AuthContext";
+
 const AdminRouter = () => {
+  const { admin } = useAuth();
+
+  // Check if user is logged in as admin
+  const isAdmin = admin?.role === "admin";
+
   return (
     <Routes>
-      <Route path="/admin" element={<AdminLayout />}>
+      {/* Public route for admin login */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+
+      {/* Protected admin routes */}
+      <Route
+        path="/admin"
+        element={isAdmin ? <AdminLayout /> : <Navigate to="/admin/login" />}
+      >
         <Route index element={<Dashboard />} />
         <Route>
           <Route path="/admin/products" element={<ProductList />} />
@@ -57,6 +75,11 @@ const AdminRouter = () => {
         <Route>
           <Route path="/admin/customers" element={<CustomerList />} />
           <Route path="/admin/customers/:id" element={<CustomerDetail />} />
+        </Route>
+        <Route>
+          <Route path="/admin/vouchers" element={<VoucherList />} />
+          <Route path="/admin/vouchers/add" element={<AddVoucher />} />
+          <Route path="/admin/vouchers/edit/:id" element={<EditVoucher />} />
         </Route>
       </Route>
     </Routes>

@@ -13,6 +13,12 @@ import {
   Row,
   notification,
   Popconfirm,
+  Skeleton,
+  Avatar,
+  Space,
+  Divider,
+  Badge,
+  Timeline,
 } from "antd";
 import {
   UserOutlined,
@@ -20,6 +26,14 @@ import {
   PlusOutlined,
   MailOutlined,
   DeleteOutlined,
+  EnvironmentOutlined,
+  PhoneOutlined,
+  EditOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  SendOutlined,
+  ShoppingCartOutlined,
+  IdcardOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../../contexts/AuthContext";
 import AddAddressModal from "./components/AddAddressModal";
@@ -28,7 +42,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import axios from "axios";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
 const ProfilePage: React.FC = () => {
@@ -45,7 +59,11 @@ const ProfilePage: React.FC = () => {
 
   const navigate = useNavigate();
   // Fetch user data query
-  const { data: userData, refetch } = useQuery({
+  const {
+    data: userData,
+    refetch,
+    isLoading,
+  } = useQuery({
     queryKey: ["user", user?.customer_id],
     queryFn: async () => {
       const response = await fetch(
@@ -96,8 +114,6 @@ const ProfilePage: React.FC = () => {
     },
   });
 
-  // Add address mutation
-
   const onFinish = (values: any) => {
     updateProfileMutation.mutate(values);
   };
@@ -146,12 +162,13 @@ const ProfilePage: React.FC = () => {
       });
     }
   };
+
   const orderColumns = [
     {
       title: "Mã đơn hàng",
       dataIndex: "order_id",
       key: "order_id",
-      render: (value: number) => `#${value}`,
+      render: (value: number) => <span className="order-id">#{value}</span>,
     },
     {
       title: "Tên đơn hàng",
@@ -166,13 +183,22 @@ const ProfilePage: React.FC = () => {
       title: "Ngày đặt",
       dataIndex: "order_date",
       key: "order_date",
-      render: (date: string) => dayjs(date).format("DD/MM/YYYY HH:mm:ss"),
+      render: (date: string) => (
+        <Space>
+          <ClockCircleOutlined />
+          {dayjs(date).format("DD/MM/YYYY HH:mm:ss")}
+        </Space>
+      ),
     },
     {
       title: "Tổng tiền",
       dataIndex: "total_amount",
       key: "total_amount",
-      render: (amount: number) => `${amount.toLocaleString("vi-VN")}đ`,
+      render: (amount: number) => (
+        <Text strong className="amount">
+          {amount.toLocaleString("vi-VN")}đ
+        </Text>
+      ),
     },
     {
       title: "Trạng thái",
@@ -180,6 +206,19 @@ const ProfilePage: React.FC = () => {
       key: "status",
       render: (status: string) => (
         <Tag
+          icon={
+            status === "cho_xac_nhan" ? (
+              <ClockCircleOutlined />
+            ) : status === "dang_giao_hang" ? (
+              <SendOutlined />
+            ) : status === "da_giao_hang" ? (
+              <CheckCircleOutlined />
+            ) : status === "da_xac_nhan" ? (
+              <ShoppingCartOutlined />
+            ) : (
+              <DeleteOutlined />
+            )
+          }
           color={
             status === "cho_xac_nhan"
               ? "gold"
@@ -191,6 +230,7 @@ const ProfilePage: React.FC = () => {
               ? "purple"
               : "red"
           }
+          className="status-tag"
         >
           {status === "cho_xac_nhan"
             ? "Chờ xác nhận"
@@ -209,202 +249,405 @@ const ProfilePage: React.FC = () => {
       dataIndex: "order_id",
       key: "order_id",
       render: (order_id: number) => (
-        <Button type="link" onClick={() => navigate(`/order/${order_id}`)}>
+        <Button
+          type="primary"
+          ghost
+          icon={<ShoppingOutlined />}
+          onClick={() => navigate(`/order/${order_id}`)}
+        >
           Xem chi tiết
         </Button>
       ),
     },
   ];
 
+  const getAvatarText = (name: string) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
-    <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
+    <div
+      className="profile-container"
+      style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}
+    >
       {notificationContextHolder}
-      <Card>
-        <Title level={2}>Tài khoản của tôi</Title>
-        <Tabs defaultActiveKey={tab}>
+      <Card
+        className="profile-card"
+        style={{
+          boxShadow: "0 6px 16px rgba(0, 0, 0, 0.08)",
+          borderRadius: "12px",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          className="profile-header"
+          style={{
+            marginBottom: "24px",
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+          }}
+        >
+          <div
+            className="avatar-container"
+            style={{
+              position: "relative",
+              display: "inline-block",
+            }}
+          >
+            {isLoading ? (
+              <Skeleton.Avatar active size={80} shape="circle" />
+            ) : (
+              <Avatar
+                size={80}
+                style={{
+                  backgroundColor: "#1890ff",
+                  fontSize: "28px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 4px 12px rgba(24, 144, 255, 0.3)",
+                }}
+              >
+                {getAvatarText(userData?.full_name)}
+              </Avatar>
+            )}
+          </div>
+          <div>
+            {isLoading ? (
+              <Skeleton active paragraph={{ rows: 1 }} />
+            ) : (
+              <>
+                <Title level={2} style={{ margin: 0 }}>
+                  Xin chào, {userData?.full_name}
+                </Title>
+                <Text type="secondary">
+                  Quản lý tài khoản và đơn hàng của bạn
+                </Text>
+              </>
+            )}
+          </div>
+        </div>
+
+        <Tabs
+          defaultActiveKey={tab}
+          className="profile-tabs"
+          type="card"
+          size="large"
+        >
           <TabPane
             tab={
-              <span>
+              <span className="tab-label">
                 <UserOutlined />
                 Thông tin cá nhân
               </span>
             }
             key="1"
           >
-            <div style={{ display: "flex", gap: "24px" }}>
-              <div style={{ flex: 1 }}>
-                <Title level={4}>Thông tin chung</Title>
-                <Form
-                  form={form}
-                  layout="vertical"
-                  onFinish={onFinish}
-                  style={{ maxWidth: 600 }}
+            <Row gutter={[24, 24]} className="profile-content">
+              <Col xs={24} md={12}>
+                <Card
+                  title={
+                    <Space>
+                      <IdcardOutlined />
+                      <span>Thông tin tài khoản</span>
+                    </Space>
+                  }
+                  className="info-card"
+                  style={{ height: "100%", borderRadius: "8px" }}
                 >
-                  <Form.Item
-                    name="full_name"
-                    label="Họ và tên"
-                    rules={[
-                      { required: true, message: "Vui lòng nhập họ tên" },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="email"
-                    label="Email"
-                    rules={[
-                      { required: true, message: "Vui lòng nhập email" },
-                      { type: "email", message: "Email không hợp lệ" },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="phone"
-                    label="Số điện thoại"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Vui lòng nhập số điện thoại",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-
-                  <Form.Item>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      loading={updateProfileMutation.isPending}
+                  {isLoading ? (
+                    <Skeleton active paragraph={{ rows: 4 }} />
+                  ) : (
+                    <Form
+                      form={form}
+                      layout="vertical"
+                      onFinish={onFinish}
+                      className="profile-form"
                     >
-                      Cập nhật thông tin
-                    </Button>
-                  </Form.Item>
-                </Form>
-              </div>
+                      <Form.Item
+                        name="full_name"
+                        label={
+                          <Space>
+                            <UserOutlined />
+                            <span>Họ và tên</span>
+                          </Space>
+                        }
+                        rules={[
+                          { required: true, message: "Vui lòng nhập họ tên" },
+                        ]}
+                      >
+                        <Input
+                          size="large"
+                          placeholder="Nhập họ và tên của bạn"
+                        />
+                      </Form.Item>
 
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "16px",
-                  }}
-                >
-                  <Title level={4}>Địa chỉ nhận hàng</Title>
-                  <Button
-                    type="default"
-                    icon={<PlusOutlined />}
-                    onClick={() => setIsModalVisible(true)}
-                  >
-                    Thêm địa chỉ mới
-                  </Button>
-                </div>
+                      <Form.Item
+                        name="email"
+                        label={
+                          <Space>
+                            <MailOutlined />
+                            <span>Email</span>
+                          </Space>
+                        }
+                        rules={[
+                          { required: true, message: "Vui lòng nhập email" },
+                          { type: "email", message: "Email không hợp lệ" },
+                        ]}
+                      >
+                        <Input size="large" placeholder="Nhập email của bạn" />
+                      </Form.Item>
 
-                <List
-                  itemLayout="horizontal"
-                  dataSource={userData?.addresses || []}
-                  renderItem={(address: any) => (
-                    <List.Item
-                      style={{
-                        background: "#f5f5f5",
-                        padding: "16px",
-                        borderRadius: "8px",
-                        marginBottom: "8px",
-                        border: "1px solid #e8e8e8",
-                      }}
-                      actions={[
-                        !address.is_default && (
-                          <Popconfirm
-                            title="Bạn có chắc chắn muốn xóa địa chỉ này không?"
-                            onConfirm={() =>
-                              handleDeleteAddress(address.address_id)
-                            }
-                          >
-                            <Button
-                              type="text"
-                              icon={<DeleteOutlined />}
-                              danger
-                            />
-                          </Popconfirm>
-                        ),
-                      ]}
-                    >
-                      <List.Item.Meta
-                        avatar={
-                          <MailOutlined
-                            style={{ fontSize: "24px", color: "#1890ff" }}
-                          />
+                      <Form.Item
+                        name="phone"
+                        label={
+                          <Space>
+                            <PhoneOutlined />
+                            <span>Số điện thoại</span>
+                          </Space>
                         }
-                        title={
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                            }}
-                          >
-                            <span>{address.receiver_name}</span>
-                            {address.isDefault && (
-                              <Tag color="blue">Địa chỉ mặc định</Tag>
-                            )}
-                          </div>
-                        }
-                        description={
-                          <Col>
-                            <Row>
-                              <div>Địa chỉ: {address.address}</div>
-                            </Row>
-                            <Row style={{ marginTop: "8px" }}>
-                              {!address.is_default && (
-                                <Button
-                                  type="primary"
-                                  size="small"
-                                  onClick={() =>
-                                    handleUpdateAddress(address.address_id)
-                                  }
-                                >
-                                  Đặt làm địa chỉ mặc định
-                                </Button>
-                              )}
-                              {address.is_default && (
-                                <Tag color="blue">Địa chỉ mặc định</Tag>
-                              )}
-                            </Row>
-                          </Col>
-                        }
-                      />
-                    </List.Item>
+                        rules={[
+                          {
+                            required: true,
+                            message: "Vui lòng nhập số điện thoại",
+                          },
+                        ]}
+                      >
+                        <Input
+                          size="large"
+                          placeholder="Nhập số điện thoại của bạn"
+                        />
+                      </Form.Item>
+
+                      <Form.Item>
+                        <Button
+                          type="primary"
+                          htmlType="submit"
+                          icon={<EditOutlined />}
+                          loading={updateProfileMutation.isPending}
+                          size="large"
+                          block
+                          style={{
+                            borderRadius: "6px",
+                            height: "48px",
+                            marginTop: "16px",
+                            transition: "all 0.3s",
+                          }}
+                          className="update-button"
+                        >
+                          Cập nhật thông tin
+                        </Button>
+                      </Form.Item>
+                    </Form>
                   )}
-                />
-              </div>
-            </div>
+                </Card>
+              </Col>
+
+              <Col xs={24} md={12}>
+                <Card
+                  title={
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        width: "100%",
+                      }}
+                    >
+                      <Space>
+                        <EnvironmentOutlined />
+                        <span>Địa chỉ nhận hàng</span>
+                      </Space>
+                      <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => setIsModalVisible(true)}
+                      >
+                        Thêm địa chỉ
+                      </Button>
+                    </div>
+                  }
+                  className="address-card"
+                  style={{ height: "100%", borderRadius: "8px" }}
+                >
+                  {isLoading ? (
+                    <Skeleton active paragraph={{ rows: 3 }} />
+                  ) : userData?.addresses?.length ? (
+                    <List
+                      itemLayout="horizontal"
+                      dataSource={userData?.addresses || []}
+                      renderItem={(address: any) => (
+                        <List.Item
+                          className="address-item"
+                          style={{
+                            padding: "16px",
+                            borderRadius: "8px",
+                            marginBottom: "12px",
+                            border: "1px solid #e8e8e8",
+                            background: address.is_default
+                              ? "#f0f7ff"
+                              : "#f5f5f5",
+                            transition: "all 0.3s ease",
+                          }}
+                          actions={[
+                            !address.is_default && (
+                              <Popconfirm
+                                title="Bạn có chắc chắn muốn xóa địa chỉ này không?"
+                                onConfirm={() =>
+                                  handleDeleteAddress(address.address_id)
+                                }
+                                placement="topRight"
+                                okText="Xóa"
+                                cancelText="Hủy"
+                              >
+                                <Button
+                                  type="text"
+                                  icon={<DeleteOutlined />}
+                                  danger
+                                  className="delete-btn"
+                                />
+                              </Popconfirm>
+                            ),
+                          ]}
+                        >
+                          <List.Item.Meta
+                            avatar={
+                              <Avatar
+                                icon={<EnvironmentOutlined />}
+                                style={{
+                                  background: address.is_default
+                                    ? "#1890ff"
+                                    : "#b4b4b4",
+                                  boxShadow: address.is_default
+                                    ? "0 3px 8px rgba(24, 144, 255, 0.3)"
+                                    : "none",
+                                }}
+                              />
+                            }
+                            title={
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                }}
+                              >
+                                <Text strong>{address.receiver_name}</Text>
+                                {address.is_default && (
+                                  <Badge
+                                    count="Mặc định"
+                                    style={{
+                                      backgroundColor: "#1890ff",
+                                      padding: "0 8px",
+                                      fontWeight: "normal",
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            }
+                            description={
+                              <div>
+                                <div className="address-text">
+                                  <Text>{address.address}</Text>
+                                </div>
+                                <div style={{ marginTop: "8px" }}>
+                                  {!address.is_default && (
+                                    <Button
+                                      type="default"
+                                      size="small"
+                                      onClick={() =>
+                                        handleUpdateAddress(address.address_id)
+                                      }
+                                      icon={<CheckCircleOutlined />}
+                                    >
+                                      Đặt làm mặc định
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            }
+                          />
+                        </List.Item>
+                      )}
+                    />
+                  ) : (
+                    <div style={{ textAlign: "center", padding: "20px" }}>
+                      <EnvironmentOutlined
+                        style={{ fontSize: "48px", color: "#d9d9d9" }}
+                      />
+                      <p style={{ marginTop: "16px" }}>
+                        Bạn chưa có địa chỉ nào
+                      </p>
+                      <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => setIsModalVisible(true)}
+                        style={{ marginTop: "8px" }}
+                      >
+                        Thêm địa chỉ mới
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              </Col>
+            </Row>
           </TabPane>
 
           <TabPane
             tab={
-              <span>
+              <span className="tab-label">
                 <ShoppingOutlined />
                 Đơn hàng của tôi
               </span>
             }
             key="2"
           >
-            <Table
-              columns={orderColumns}
-              dataSource={userData?.orders || []}
-              loading={!userData}
-              rowKey="order_id"
-              pagination={{
-                pageSize: 10,
-                total: userData?.orders?.length || 0,
-                showTotal: (total) => `Tổng ${total} đơn hàng`,
-              }}
-            />
+            <Card className="orders-card" style={{ borderRadius: "8px" }}>
+              {isLoading ? (
+                <Skeleton active paragraph={{ rows: 5 }} />
+              ) : (
+                <div className="order-list">
+                  {userData?.orders?.length ? (
+                    <Table
+                      columns={orderColumns}
+                      dataSource={userData?.orders || []}
+                      loading={isLoading}
+                      rowKey="order_id"
+                      pagination={{
+                        pageSize: 10,
+                        total: userData?.orders?.length || 0,
+                        showTotal: (total) => `Tổng ${total} đơn hàng`,
+                      }}
+                      className="orders-table"
+                      rowClassName="order-row"
+                    />
+                  ) : (
+                    <div style={{ textAlign: "center", padding: "40px 0" }}>
+                      <ShoppingCartOutlined
+                        style={{ fontSize: "48px", color: "#d9d9d9" }}
+                      />
+                      <p style={{ marginTop: "16px" }}>
+                        Bạn chưa có đơn hàng nào
+                      </p>
+                      <Button
+                        type="primary"
+                        onClick={() => navigate("/products")}
+                        style={{ marginTop: "8px" }}
+                      >
+                        Mua sắm ngay
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
           </TabPane>
         </Tabs>
       </Card>
@@ -415,6 +658,88 @@ const ProfilePage: React.FC = () => {
         isModalVisible={isModalVisible}
         setIsModalVisible={setIsModalVisible}
       />
+
+      <style>
+        {`
+          .profile-container {
+            animation: fadeIn 0.5s ease;
+          }
+          
+          .profile-card {
+            transition: all 0.3s ease;
+          }
+          
+          .profile-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+          }
+          
+          .tab-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+          }
+          
+          .update-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(24, 144, 255, 0.35);
+          }
+          
+          .address-item {
+            transition: all 0.3s ease;
+          }
+          
+          .address-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+          }
+          
+          .delete-btn {
+            opacity: 0.7;
+            transition: all 0.3s;
+          }
+          
+          .address-item:hover .delete-btn {
+            opacity: 1;
+          }
+          
+          .order-id {
+            font-weight: 500;
+            color: #1890ff;
+          }
+          
+          .status-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+          }
+          
+          .amount {
+            color: #ff4d4f;
+          }
+          
+          .order-row {
+            transition: all 0.3s;
+          }
+          
+          .order-row:hover {
+            background-color: #f0f7ff;
+          }
+          
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          
+          @media (max-width: 768px) {
+            .profile-tabs .ant-tabs-nav {
+              margin-bottom: 16px;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };

@@ -88,10 +88,10 @@ const AdminLayout: React.FC = () => {
       onClick: () => navigate("/admin/revenue"),
     },
     {
-      key: "settings",
-      icon: <SettingOutlined />,
-      label: "Cài đặt",
-      onClick: () => navigate("/admin/settings"),
+      key: "vouchers",
+      icon: <TagOutlined />,
+      label: "Mã giảm giá",
+      onClick: () => navigate("/admin/vouchers"),
     },
   ];
 

@@ -13,6 +13,9 @@ import {
   Row,
   Col,
   DatePicker,
+  Divider,
+  Badge,
+  Statistic,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
@@ -21,6 +24,10 @@ import {
   EyeOutlined,
   SearchOutlined,
   FilterOutlined,
+  DollarCircleOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  InboxOutlined,
 } from "@ant-design/icons";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -94,27 +101,51 @@ const OrderList = () => {
     }
   };
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "cho_xac_nhan":
+        return <ClockCircleOutlined />;
+      case "da_xac_nhan":
+        return <CheckCircleOutlined />;
+      case "dang_giao_hang":
+        return <InboxOutlined />;
+      case "da_giao_hang":
+        return <CheckCircleOutlined />;
+      case "da_huy":
+        return <ClockCircleOutlined />;
+      default:
+        return <ClockCircleOutlined />;
+    }
+  };
+
   const columns: ColumnsType<Order> = [
     {
       title: "Mã đơn hàng",
       dataIndex: "order_id",
       key: "order_id",
       render: (id) => <Text strong>#{id.toString().padStart(5, "0")}</Text>,
+      width: 120,
     },
     {
       title: "Khách hàng",
       dataIndex: "customer",
       key: "customer",
       render: (customer) => (
-        <Space direction="vertical" size="small">
-          <Text strong>{customer.full_name}</Text>
-          <Text type="secondary">{customer.phone}</Text>
+        <Space direction="vertical" size="small" style={{ marginLeft: 0 }}>
+          <Text strong style={{ fontSize: "14px" }}>
+            {customer.full_name}
+          </Text>
+          <Text type="secondary" style={{ fontSize: "12px" }}>
+            {customer.phone}
+          </Text>
         </Space>
       ),
+      width: 180,
     },
     {
       title: "Tên đơn hàng",
       dataIndex: "orderDetails",
+      ellipsis: true,
       render: (orderDetails: any) => {
         return orderDetails
           .map((detail: any) => detail.variant.product.product_name)
@@ -126,56 +157,76 @@ const OrderList = () => {
       dataIndex: "total_amount",
       key: "total_amount",
       render: (amount) => (
-        <Text strong type="danger">
+        <Text strong type="danger" style={{ fontSize: "14px" }}>
           {amount.toLocaleString("vi-VN")}đ
         </Text>
       ),
+      width: 130,
+      align: "right",
     },
     {
-      title: "Phương thức thanh toán",
+      title: "Phương thức",
       dataIndex: "paymentMethod",
       key: "paymentMethod",
       render: (method) => (
-        <Tag color="blue">
-          {method === "cod" ? "Thanh toán khi nhận hàng" : "VNPay"}
+        <Tag color="blue" style={{ borderRadius: "4px" }}>
+          {method === "cod" ? "COD" : "VNPay"}
         </Tag>
       ),
+      width: 120,
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status) => (
-        <Tag color={getStatusColor(status)}>{getStatusText(status)}</Tag>
+        <Badge
+          status={getStatusColor(status) as any}
+          text={
+            <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              {getStatusIcon(status)} {getStatusText(status)}
+            </span>
+          }
+        />
       ),
+      width: 150,
     },
     {
       title: "Ngày đặt",
       dataIndex: "order_date",
       key: "order_date",
       render: (date) => <Text>{dayjs(date).format("DD/MM/YYYY HH:mm")}</Text>,
+      width: 150,
     },
     {
       title: "Hành động",
       key: "actions",
       render: (_, record) => (
-        <Space size="middle">
+        <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Link to={`/admin/orders/${record.order_id}`}>
-              <Button type="primary" icon={<EyeOutlined />} />
+              <Button
+                type="primary"
+                icon={<EyeOutlined />}
+                size="middle"
+                style={{ borderRadius: "4px" }}
+              />
             </Link>
           </Tooltip>
           <Tooltip title="Cập nhật trạng thái">
             <Link to={`/admin/orders/edit/${record.order_id}`}>
               <Button
-                type="default"
+                type="primary"
                 icon={<EditOutlined />}
-                style={{ backgroundColor: "#52c41a", color: "white" }}
+                size="middle"
+                style={{ backgroundColor: "#52c41a", borderRadius: "4px" }}
               />
             </Link>
           </Tooltip>
         </Space>
       ),
+      width: 100,
+      align: "center",
     },
   ];
 
@@ -203,13 +254,36 @@ const OrderList = () => {
       })
     : [];
 
+  // Calculate statistics
+  const totalOrders = filteredOrders.length;
+  const pendingOrders = filteredOrders.filter(
+    (order: Order) => order.status === "cho_xac_nhan"
+  ).length;
+  const shippingOrders = filteredOrders.filter(
+    (order: Order) => order.status === "dang_giao_hang"
+  ).length;
+  const completedOrders = filteredOrders.filter(
+    (order: Order) => order.status === "da_giao_hang"
+  ).length;
+
   return (
-    <div style={{ padding: "24px" }}>
+    <div
+      style={{
+        padding: "24px",
+        backgroundColor: "#f0f2f5",
+        minHeight: "100vh",
+      }}
+    >
       {contextHolder}
-      <Card style={{ borderRadius: "8px" }}>
+      <Card
+        style={{
+          borderRadius: "8px",
+          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
+          marginBottom: "16px",
+        }}
+      >
         <div
           style={{
-            marginBottom: "16px",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -219,22 +293,100 @@ const OrderList = () => {
             <ShoppingCartOutlined style={{ marginRight: "8px" }} />
             Quản lý đơn hàng
           </Title>
+          <Space>
+            <Button icon={<FilterOutlined />}>Xuất Excel</Button>
+          </Space>
         </div>
+      </Card>
 
+      <Row gutter={16} style={{ marginBottom: "16px" }}>
+        <Col span={6}>
+          <Card
+            bordered={false}
+            style={{
+              borderRadius: "8px",
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
+            }}
+          >
+            <Statistic
+              title="Tổng đơn hàng"
+              value={totalOrders}
+              prefix={<ShoppingCartOutlined />}
+              valueStyle={{ color: "#1890ff" }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card
+            bordered={false}
+            style={{
+              borderRadius: "8px",
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
+            }}
+          >
+            <Statistic
+              title="Chờ xác nhận"
+              value={pendingOrders}
+              prefix={<ClockCircleOutlined />}
+              valueStyle={{ color: "#faad14" }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card
+            bordered={false}
+            style={{
+              borderRadius: "8px",
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
+            }}
+          >
+            <Statistic
+              title="Đang giao hàng"
+              value={shippingOrders}
+              prefix={<InboxOutlined />}
+              valueStyle={{ color: "#13c2c2" }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card
+            bordered={false}
+            style={{
+              borderRadius: "8px",
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
+            }}
+          >
+            <Statistic
+              title="Đã giao hàng"
+              value={completedOrders}
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: "#52c41a" }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      <Card
+        style={{
+          borderRadius: "8px",
+          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
+        }}
+      >
         <Row gutter={16} style={{ marginBottom: "16px" }}>
           <Col span={8}>
             <Input
-              placeholder="Tìm kiếm theo mã đơn hàng, tên khách hàng hoặc số điện thoại"
+              placeholder="Tìm kiếm theo mã đơn hàng, tên khách hoặc SĐT"
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               allowClear
+              style={{ borderRadius: "6px" }}
             />
           </Col>
           <Col span={8}>
             <Select
               placeholder="Lọc theo trạng thái đơn hàng"
-              style={{ width: "100%" }}
+              style={{ width: "100%", borderRadius: "6px" }}
               allowClear
               onChange={(value) =>
                 setStatusFilter(value === "all" ? null : value)
@@ -251,13 +403,15 @@ const OrderList = () => {
           </Col>
           <Col span={8}>
             <RangePicker
-              style={{ width: "100%" }}
+              style={{ width: "100%", borderRadius: "6px" }}
               onChange={(dates) => setDateRange(dates)}
               format="DD/MM/YYYY"
               placeholder={["Từ ngày", "Đến ngày"]}
             />
           </Col>
         </Row>
+
+        <Divider style={{ margin: "8px 0 16px" }} />
 
         <Table
           columns={columns}
@@ -268,9 +422,13 @@ const OrderList = () => {
             pageSize: 10,
             showSizeChanger: true,
             showTotal: (total) => `Tổng số ${total} đơn hàng`,
+            position: ["bottomRight"],
+            style: { marginTop: "16px" },
           }}
-          bordered
           size="middle"
+          style={{ marginTop: "8px" }}
+          rowClassName={() => "order-table-row"}
+          scroll={{ x: 1200 }}
         />
       </Card>
     </div>

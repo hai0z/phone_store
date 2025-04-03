@@ -25,7 +25,7 @@ class OrderController {
   };
   createOrder = async (req: Request, res: Response) => {
     try {
-      const { orderData, orderDetails, voucherId } = req.body;
+      const { orderData, orderDetails } = req.body;
 
       // Validate stock availability for all variants
       for (const detail of orderDetails) {
@@ -40,14 +40,16 @@ class OrderController {
         }
       }
 
-      // If voucher is provided, validate it
-      if (voucherId) {
+      if (orderData.voucher_id) {
+        const voucher = await this.voucherService.getVoucherById(
+          orderData.voucher_id
+        );
         const totalAmount = orderDetails.reduce(
           (sum: number, detail: any) => sum + detail.price * detail.quantity,
           0
         );
-        await this.voucherService.validateVoucher(voucherId, totalAmount);
-        await this.voucherService.useVoucher(voucherId);
+        await this.voucherService.validateVoucher(voucher?.code!, totalAmount);
+        await this.voucherService.useVoucher(orderData.voucher_id);
       }
 
       const result = await this.orderService.createOrder(

@@ -13,6 +13,7 @@ import CartRoute from "./src/routes/cart.routes";
 import AuthRoute from "./src/routes/auth.routes";
 import OrderRoute from "./src/routes/order.routes";
 import EmailRoute from "./src/routes/email.routes";
+import VoucherRoute from "./src/routes/voucher.routes";
 import path from "path";
 import StatisticsRoute from "./src/routes/statistics.routes";
 import RattingRoute from "./src/routes/rating.routes";
@@ -41,7 +42,7 @@ app.use("/api/v1/orders", OrderRoute);
 app.use("/api/v1/email", EmailRoute);
 app.use("/api/v1/statistics", StatisticsRoute);
 app.use("/api/v1/ratings", RattingRoute);
-
+app.use("/api/v1/vouchers", VoucherRoute);
 app.listen(port, () => {
   console.log(`backendd listening at http://localhost:${port}`);
 });
