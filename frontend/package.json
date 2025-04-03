@@ -17,6 +17,7 @@
     "apexcharts": "^4.5.0",
     "axios": "^1.8.1",
     "dayjs": "^1.11.13",
+    "framer-motion": "^12.6.3",
     "marked": "^15.0.7",
     "marked-react": "^3.0.0",
     "react": "^19.0.0",
