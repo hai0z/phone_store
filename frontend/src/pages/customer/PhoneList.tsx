@@ -13,7 +13,6 @@ import {
   Checkbox,
   Input,
   Pagination,
-  Tooltip,
   List,
   InputNumber,
   Spin,
@@ -23,8 +22,6 @@ import {
 } from "antd";
 import {
   FilterOutlined,
-  AppstoreOutlined,
-  BarsOutlined,
   PercentageOutlined,
   ThunderboltOutlined,
   StarOutlined,
@@ -61,8 +58,6 @@ const PhoneList: React.FC = () => {
   const { token } = useToken();
   const [filterDrawerVisible, setFilterDrawerVisible] = useState(false);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedStorages, setSelectedStorages] = useState<string[]>([]);
   const [selectedRams, setSelectedRams] = useState<string[]>([]);
@@ -78,6 +73,12 @@ const PhoneList: React.FC = () => {
       return response.data;
     },
   });
+
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    filterOptions?.priceRange.min!,
+    filterOptions?.priceRange.max!,
+  ]);
+
   const { data: products, isFetching } = useQuery({
     queryKey: ["products", searchParams.toString()],
     queryFn: async (): Promise<{
@@ -95,7 +96,6 @@ const PhoneList: React.FC = () => {
       return response.data;
     },
   });
-  // Sample data with more details
 
   const handleSearch = (value: string) => {
     setSearchParams({ search: value });
@@ -112,126 +112,6 @@ const PhoneList: React.FC = () => {
     </Row>
   );
 
-  const renderListView = () => (
-    <List
-      itemLayout="horizontal"
-      dataSource={products?.products}
-      renderItem={(product) => (
-        <List.Item
-          key={product.product_id}
-          style={{
-            background: "#fff",
-            borderRadius: "12px",
-            marginBottom: "16px",
-            padding: "16px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-          }}
-        >
-          <Row gutter={24} style={{ width: "100%", alignItems: "center" }}>
-            <Col xs={24} sm={6} style={{ textAlign: "center" }}>
-              {/* <Badge.Ribbon
-                text={phone.tag}
-                color={
-                  phone.tag === "Mới"
-                    ? "#52c41a"
-                    : phone.tag === "Bán chạy"
-                    ? "#f5222d"
-                    : phone.tag === "Giảm sốc"
-                    ? "#fa8c16"
-                    : "#1890ff"
-                }
-              >
-                <div
-                  style={{
-                    padding: "20px",
-                    background: "#f7f9fc",
-                    borderRadius: "8px",
-                  }}
-                >
-                  <img
-                    alt={phone.name}
-                    src={phone.image}
-                    style={{ height: "120px", objectFit: "contain" }}
-                  />
-                </div>
-              </Badge.Ribbon> */}
-            </Col>
-
-            {/* <Col xs={24} sm={12}>
-              <Space direction="vertical" size="small">
-                <Title level={4} style={{ marginBottom: "8px" }}>
-                  {phone.name}
-                </Title>
-
-                <Space wrap>
-                  <Tag color="blue" icon={<MobileOutlined />}>
-                    {phone.specs.screen}
-                  </Tag>
-                  <Tag color="green">{phone.specs.storage}</Tag>
-                  <Tag color="purple">{phone.specs.ram}</Tag>
-                  <Tag color="cyan" icon={<SettingOutlined />}>
-                    {phone.specs.processor}
-                  </Tag>
-                  <Tag color="magenta" icon={<MobileOutlined />}>
-                    {phone.specs.camera}
-                  </Tag>
-                </Space>
-
-                <div>
-                  <Rate
-                    allowHalf
-                    disabled
-                    defaultValue={phone.rating}
-                    style={{ fontSize: "14px" }}
-                  />
-                  <Text type="secondary" style={{ marginLeft: "8px" }}>
-                    ({phone.reviews} đánh giá)
-                  </Text>
-                </div>
-              </Space>
-            </Col>
-
-            <Col xs={24} sm={6} style={{ textAlign: "right" }}>
-              <Space direction="vertical" size="small" align="end">
-                <div>
-                  <Text type="danger" strong style={{ fontSize: "22px" }}>
-                    ${phone.price.toLocaleString()}
-                  </Text>
-                  <Tag color="red" style={{ marginLeft: "8px" }}>
-                    {Math.round(
-                      ((phone.originalPrice - phone.price) /
-                        phone.originalPrice) *
-                        100
-                    )}
-                    %
-                  </Tag>
-                </div>
-                <Text delete type="secondary">
-                  ${phone.originalPrice.toLocaleString()}
-                </Text>
-
-                <Space style={{ marginTop: "12px" }}>
-                  <Button
-                    type="primary"
-                    icon={<ShoppingCartOutlined />}
-                    style={{ borderRadius: "8px" }}
-                  >
-                    Thêm vào giỏ
-                  </Button>
-                  <Button
-                    type="text"
-                    icon={<HeartOutlined />}
-                    style={{ borderRadius: "8px", border: "1px solid #d9d9d9" }}
-                  />
-                </Space>
-              </Space>
-            </Col> */}
-          </Row>
-        </List.Item>
-      )}
-    />
-  );
-
   const handleFilterChange = () => {
     const params = new URLSearchParams();
 
@@ -244,13 +124,17 @@ const PhoneList: React.FC = () => {
     if (selectedRams.length > 0) {
       params.set("ram", selectedRams.join(","));
     }
-    if (priceRange[0] > 0 || priceRange[1] < 2000) {
+    if (
+      priceRange[0] > filterOptions?.priceRange.min! ||
+      priceRange[1] < filterOptions?.priceRange.max!
+    ) {
       params.set("minPrice", priceRange[0].toString());
       params.set("maxPrice", priceRange[1].toString());
     }
 
     setSearchParams(params);
     setCurrentPage(1);
+    setFilterDrawerVisible(false);
   };
 
   const handlePageChange = (page: number) => {
@@ -258,29 +142,6 @@ const PhoneList: React.FC = () => {
     const params = new URLSearchParams(searchParams);
     params.set("page", page.toString());
     setSearchParams(params);
-  };
-
-  const handleQuickFilter = (type: string) => {
-    const params = new URLSearchParams();
-    switch (type) {
-      case "promotion":
-        params.set("hasPromotion", "true");
-        break;
-      case "discount":
-        params.set("hasDiscount", "true");
-        break;
-      case "rating":
-        params.set("minRating", "5");
-        break;
-      case "screen":
-        params.set("minScreenSize", "6.5");
-        break;
-      case "ram":
-        params.set("minRam", "8");
-        break;
-    }
-    setSearchParams(params);
-    setCurrentPage(1);
   };
 
   const renderFilterDrawer = () => (
@@ -337,7 +198,10 @@ const PhoneList: React.FC = () => {
               setSelectedBrands([]);
               setSelectedStorages([]);
               setSelectedRams([]);
-              setPriceRange([0, 2000]);
+              setPriceRange([
+                filterOptions?.priceRange.min!,
+                filterOptions?.priceRange.max!,
+              ]);
               setSearchParams({});
             }}
             style={{
@@ -361,17 +225,11 @@ const PhoneList: React.FC = () => {
               Thương hiệu
             </Text>
           }
-          bordered={false}
           style={{
             marginBottom: "16px",
             borderRadius: "12px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
           }}
-          headStyle={{
-            borderBottom: "none",
-            padding: "16px 16px 0 16px",
-          }}
-          bodyStyle={{ padding: "8px 16px 16px 16px" }}
         >
           <Checkbox.Group
             value={selectedBrands}
@@ -399,17 +257,11 @@ const PhoneList: React.FC = () => {
               Bộ nhớ trong
             </Text>
           }
-          bordered={false}
           style={{
             marginBottom: "16px",
             borderRadius: "12px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
           }}
-          headStyle={{
-            borderBottom: "none",
-            padding: "16px 16px 0 16px",
-          }}
-          bodyStyle={{ padding: "8px 16px 16px 16px" }}
         >
           <Checkbox.Group
             value={selectedStorages}
@@ -440,17 +292,11 @@ const PhoneList: React.FC = () => {
               RAM
             </Text>
           }
-          bordered={false}
           style={{
             marginBottom: "16px",
             borderRadius: "12px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
           }}
-          headStyle={{
-            borderBottom: "none",
-            padding: "16px 16px 0 16px",
-          }}
-          bodyStyle={{ padding: "8px 16px 16px 16px" }}
         >
           <Checkbox.Group
             value={selectedRams}
@@ -478,25 +324,19 @@ const PhoneList: React.FC = () => {
               Khoảng giá
             </Text>
           }
-          bordered={false}
           style={{
             marginBottom: "16px",
             borderRadius: "12px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
           }}
-          headStyle={{
-            borderBottom: "none",
-            padding: "16px 16px 0 16px",
-          }}
-          bodyStyle={{ padding: "16px" }}
         >
           <Slider
             range
-            min={0}
-            max={2000}
+            min={filterOptions?.priceRange.min!}
+            max={filterOptions?.priceRange.max!}
             value={priceRange}
             onChange={(value) => setPriceRange(value as [number, number])}
-            tooltip={{ formatter: (value) => `$${value}` }}
+            tooltip={{ formatter: null }}
             styles={{
               track: { backgroundColor: token.colorError },
               handle: { borderColor: token.colorError },
@@ -504,22 +344,30 @@ const PhoneList: React.FC = () => {
           />
           <Flex justify="space-between" style={{ marginTop: "16px" }}>
             <InputNumber
-              min={0}
-              max={priceRange[1]}
+              min={filterOptions?.priceRange.min!}
+              max={filterOptions?.priceRange.max!}
               value={priceRange[0]}
               onChange={(value) => setPriceRange([value || 0, priceRange[1]])}
-              formatter={(value) => `$ ${value}`}
+              formatter={(value) =>
+                `${Number(value).toLocaleString("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                })}`
+              }
               style={{ width: "45%" }}
             />
             <Text type="secondary">đến</Text>
             <InputNumber
-              min={priceRange[0]}
-              max={2000}
+              min={filterOptions?.priceRange.min!}
+              max={filterOptions?.priceRange.max!}
               value={priceRange[1]}
-              onChange={(value) =>
-                setPriceRange([priceRange[0], value || 2000])
+              onChange={(value) => setPriceRange([priceRange[0], value || 0])}
+              formatter={(value) =>
+                `${Number(value).toLocaleString("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                })}`
               }
-              formatter={(value) => `$ ${value}`}
               style={{ width: "45%" }}
             />
           </Flex>
@@ -582,85 +430,64 @@ const PhoneList: React.FC = () => {
             </Button>
           </Space>
         </div>
-        {/* Quick Filter Tags */}
-        <div style={{ marginBottom: "24px" }}>
-          <Space wrap size="middle">
-            <Button
-              type="default"
-              icon={<ThunderboltOutlined />}
-              shape="round"
-              onClick={() => handleQuickFilter("promotion")}
-            >
-              Khuyến mãi hot
-            </Button>
-            <Button
-              type="default"
-              icon={<PercentageOutlined />}
-              shape="round"
-              onClick={() => handleQuickFilter("discount")}
-            >
-              Giảm giá sốc
-            </Button>
-            <Button
-              type="default"
-              icon={<StarOutlined />}
-              shape="round"
-              onClick={() => handleQuickFilter("rating")}
-            >
-              Đánh giá 5 sao
-            </Button>
-            <Button
-              type="default"
-              icon={<MobileOutlined />}
-              shape="round"
-              onClick={() => handleQuickFilter("screen")}
-            >
-              Màn hình lớn
-            </Button>
-            <Button
-              type="default"
-              shape="round"
-              onClick={() => handleQuickFilter("ram")}
-            >
-              RAM 8GB+
-            </Button>
-          </Space>
-        </div>
+
         {/* Active Filters */}
         {(selectedBrands.length > 0 ||
           selectedStorages.length > 0 ||
           selectedRams.length > 0 ||
-          priceRange[0] > 0 ||
-          priceRange[1] < 2000) && (
+          priceRange[0] > filterOptions?.priceRange.min! ||
+          priceRange[1] < filterOptions?.priceRange.max!) && (
           <div style={{ marginBottom: "24px" }}>
             <Space wrap>
               <Text strong>Bộ lọc đang chọn:</Text>
 
-              {/* {selectedBrands.map((brand) => (
+              {selectedBrands.map((brand) => (
                 <Tag
                   key={brand}
                   closable
-                  onClose={() =>
-                    setSelectedBrands(selectedBrands.filter((b) => b !== brand))
-                  }
+                  onClose={() => {
+                    const params = new URLSearchParams(searchParams);
+                    params.set(
+                      "brandIds",
+                      selectedBrands.filter((b) => b !== brand).join(",")
+                    );
+                    setSearchParams(params);
+                    setSelectedBrands(
+                      selectedBrands.filter((b) => b !== brand)
+                    );
+                  }}
                   color="blue"
                 >
-                  {brands.find((b) => b.value === brand)?.label}
+                  {
+                    filterOptions?.brands.find((b) => b.brand_id === +brand)
+                      ?.brand_name
+                  }
                 </Tag>
-              ))} */}
+              ))}
 
               {selectedStorages.map((storage) => (
                 <Tag
                   key={storage}
                   closable
-                  onClose={() =>
+                  onClose={() => {
+                    const params = new URLSearchParams(searchParams);
+                    params.set(
+                      "storages",
+                      selectedStorages.filter((s) => s !== storage).join(",")
+                    );
+                    setSearchParams(params);
                     setSelectedStorages(
                       selectedStorages.filter((s) => s !== storage)
-                    )
-                  }
+                    );
+                  }}
                   color="green"
                 >
-                  Bộ nhớ: {storage}GB
+                  Bộ nhớ:{" "}
+                  {
+                    filterOptions?.storages.find(
+                      (s) => s.storage_id === +storage
+                    )?.storage_capacity
+                  }
                 </Tag>
               ))}
 
@@ -668,36 +495,70 @@ const PhoneList: React.FC = () => {
                 <Tag
                   key={ram}
                   closable
-                  onClose={() =>
-                    setSelectedRams(selectedRams.filter((r) => r !== ram))
-                  }
+                  onClose={() => {
+                    const params = new URLSearchParams(searchParams);
+                    params.set(
+                      "ram",
+                      selectedRams.filter((r) => r !== ram).join(",")
+                    );
+                    setSearchParams(params);
+                    setSelectedRams(selectedRams.filter((r) => r !== ram));
+                  }}
                   color="purple"
                 >
-                  RAM: {ram}GB
+                  RAM:{" "}
+                  {filterOptions?.ram.find((r) => r.ram_id === +ram)?.capacity}
                 </Tag>
               ))}
 
-              {(priceRange[0] > 0 || priceRange[1] < 2000) && (
+              {(priceRange[0] > filterOptions?.priceRange.min! ||
+                priceRange[1] < filterOptions?.priceRange.max!) && (
                 <Tag
                   closable
-                  onClose={() => setPriceRange([0, 2000])}
+                  onClose={() => {
+                    setPriceRange([
+                      filterOptions?.priceRange.min!,
+                      filterOptions?.priceRange.max!,
+                    ]);
+                    const params = new URLSearchParams(searchParams);
+                    params.delete("minPrice");
+                    params.delete("maxPrice");
+                  }}
                   color="red"
                 >
-                  Giá: ${priceRange[0]} - ${priceRange[1]}
+                  Giá:{" "}
+                  {priceRange[0].toLocaleString("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  })}{" "}
+                  -{" "}
+                  {priceRange[1].toLocaleString("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  })}
                 </Tag>
               )}
 
-              <Button
-                type="link"
-                onClick={() => {
-                  setSelectedBrands([]);
-                  setSelectedStorages([]);
-                  setSelectedRams([]);
-                  setPriceRange([0, 2000]);
-                }}
-              >
-                Xóa tất cả
-              </Button>
+              {selectedBrands.length > 0 ||
+                selectedStorages.length > 0 ||
+                selectedRams.length > 0 ||
+                priceRange[0] > filterOptions?.priceRange.min! ||
+                (priceRange[1] < filterOptions?.priceRange.max! && (
+                  <Button
+                    type="link"
+                    onClick={() => {
+                      setSelectedBrands([]);
+                      setSelectedStorages([]);
+                      setSelectedRams([]);
+                      setPriceRange([
+                        filterOptions?.priceRange.min!,
+                        filterOptions?.priceRange.max!,
+                      ]);
+                    }}
+                  >
+                    Xóa tất cả
+                  </Button>
+                ))}
             </Space>
           </div>
         )}
@@ -714,11 +575,7 @@ const PhoneList: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Product List */}
-
-            <div style={{ marginBottom: "24px" }}>
-              {viewMode === "grid" ? renderGridView() : renderListView()}
-            </div>
+            <div style={{ marginBottom: "24px" }}>{renderGridView()}</div>
 
             {/* Pagination */}
             <Flex justify="center" align="center" style={{ marginTop: "32px" }}>

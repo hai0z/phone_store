@@ -8,10 +8,11 @@ import {
   Tag,
   Tooltip,
   Popconfirm,
+  message,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Product, ProductImage } from "../../../types";
 import {
   EditOutlined,
@@ -25,6 +26,9 @@ import {
 const { Title, Text } = Typography;
 
 const ProductList = () => {
+  const queryClient = useQueryClient();
+  const [messageApi, messageContextHolder] = message.useMessage();
+  const navigate = useNavigate();
   const { data, isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
@@ -33,8 +37,21 @@ const ProductList = () => {
     },
   });
 
-  const navigation = useNavigate();
-
+  const { mutate: deleteProduct } = useMutation({
+    mutationFn: async (productId: number) => {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/products/${productId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      messageApi.success("Xóa sản phẩm thành công");
+    },
+  });
   const columns: ColumnsType<Product & { images: ProductImage[] }> = [
     {
       title: "Hình ảnh",
@@ -104,7 +121,7 @@ const ProductList = () => {
           <Tooltip title="Xóa">
             <Popconfirm
               title="Bạn có chắc chắn muốn xóa sản phẩm này không?"
-              onConfirm={() => {}}
+              onConfirm={() => deleteProduct(record.product_id)}
             >
               <Button
                 type="default"
@@ -121,6 +138,7 @@ const ProductList = () => {
 
   return (
     <div style={{ padding: "24px" }}>
+      {messageContextHolder}
       <Card style={{ borderRadius: "8px", marginBottom: "16px" }}>
         <div
           style={{
@@ -140,7 +158,7 @@ const ProductList = () => {
             type="primary"
             icon={<PlusOutlined />}
             size="large"
-            onClick={() => navigation("/admin/products/add")}
+            onClick={() => navigate("/admin/products/add")}
           >
             Thêm sản phẩm mới
           </Button>

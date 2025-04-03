@@ -163,11 +163,11 @@ export class FilterService extends BaseService {
 
     const priceRange = await this.prisma.productVariants.aggregate({
       _min: {
-        original_price: true,
-        promotional_price: true,
+        sale_price: true,
       },
       _max: {
         sale_price: true,
+        promotional_price: true,
       },
     });
 
@@ -178,7 +178,7 @@ export class FilterService extends BaseService {
       storages,
       ram,
       priceRange: {
-        min: priceRange._min.original_price,
+        min: priceRange._min.sale_price,
         max: priceRange._max.sale_price,
       },
     };

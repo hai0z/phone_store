@@ -104,21 +104,6 @@ const CustomerLayout: React.FC = () => {
       label: "Điện thoại",
       onClick: () => navigate("/dtdd"),
     },
-    {
-      key: "accessories",
-      label: "Phụ kiện",
-      onClick: () => navigate("/phukien"),
-    },
-    {
-      key: "news",
-      label: "Tin tức",
-      onClick: () => navigate("/news"),
-    },
-    {
-      key: "contact",
-      label: "Liên hệ",
-      onClick: () => navigate("/contact"),
-    },
   ];
 
   const [suggestions, setSuggestions] = useState<Product[]>([]);
