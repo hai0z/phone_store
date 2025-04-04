@@ -17,6 +17,7 @@ import VoucherRoute from "./src/routes/voucher.routes";
 import path from "path";
 import StatisticsRoute from "./src/routes/statistics.routes";
 import RattingRoute from "./src/routes/rating.routes";
+import BannerRoute from "./src/routes/banner.routes";
 
 const app = express();
 const port = 8080;
@@ -43,6 +44,7 @@ app.use("/api/v1/email", EmailRoute);
 app.use("/api/v1/statistics", StatisticsRoute);
 app.use("/api/v1/ratings", RattingRoute);
 app.use("/api/v1/vouchers", VoucherRoute);
+app.use("/api/v1/banners", BannerRoute);
 app.listen(port, () => {
   console.log(`backendd listening at http://localhost:${port}`);
 });

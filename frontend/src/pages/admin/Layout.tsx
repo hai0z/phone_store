@@ -16,6 +16,7 @@ import {
   MailOutlined,
   FacebookOutlined,
   InstagramOutlined,
+  PictureOutlined,
 } from "@ant-design/icons";
 import {
   Layout,
@@ -92,6 +93,12 @@ const AdminLayout: React.FC = () => {
       icon: <TagOutlined />,
       label: "Mã giảm giá",
       onClick: () => navigate("/admin/vouchers"),
+    },
+    {
+      key: "banners",
+      icon: <PictureOutlined />,
+      label: "Quảng cáo",
+      onClick: () => navigate("/admin/banners"),
     },
   ];
 

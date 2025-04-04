@@ -188,3 +188,27 @@ model Ratings {
   customer    Customers @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade)
   content     String? // Nội dung đánh giá
 }
+
+// Model Banners (Quảng cáo)
+model Banners {
+  banner_id  Int            @id @default(autoincrement())
+  is_active  Boolean        @default(true) // Trạng thái hiển thị
+  start_date DateTime? // Ngày bắt đầu hiển thị
+  end_date   DateTime? // Ngày kết thúc hiển thị
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
+  images     BannerImages[] // Quan hệ 1-N với BannerImages
+}
+
+// Model BannerImages (Hình ảnh banner)
+model BannerImages {
+  image_id    Int      @id @default(autoincrement())
+  banner_id   Int
+  image_url   String // Đường dẫn hình ảnh
+  position    Int      @default(0) // Vị trí hiển thị trong banner
+  title       String? // Tiêu đề của ảnh (nếu cần)
+  description String? // Mô tả của ảnh (nếu cần)
+  link_url    String? // Đường dẫn khi click vào ảnh (nếu khác với banner)
+  created_at  DateTime @default(now())
+  banner      Banners  @relation(fields: [banner_id], references: [banner_id], onDelete: Cascade)
+}

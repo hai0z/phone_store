@@ -21,6 +21,9 @@ import CustomerDetail from "../pages/admin/customer/CustomerDetail";
 import VoucherList from "../pages/admin/voucher/VoucherList";
 import AddVoucher from "../pages/admin/voucher/AddVoucher";
 import EditVoucher from "../pages/admin/voucher/EditVoucher";
+import BannerList from "../pages/admin/banner/Index";
+import AddBanner from "../pages/admin/banner/AddBanner";
+import EditBanner from "../pages/admin/banner/EditBanner";
 import AdminLogin from "../pages/admin/login/Login";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -80,6 +83,11 @@ const AdminRouter = () => {
           <Route path="/admin/vouchers" element={<VoucherList />} />
           <Route path="/admin/vouchers/add" element={<AddVoucher />} />
           <Route path="/admin/vouchers/edit/:id" element={<EditVoucher />} />
+        </Route>
+        <Route>
+          <Route path="/admin/banners" element={<BannerList />} />
+          <Route path="/admin/banners/add" element={<AddBanner />} />
+          <Route path="/admin/banners/edit/:id" element={<EditBanner />} />
         </Route>
       </Route>
     </Routes>
