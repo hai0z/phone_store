@@ -522,8 +522,6 @@ const PhoneList: React.FC = () => {
                 options={[
                   { label: "Giá thấp đến cao", value: "price_asc" },
                   { label: "Giá cao đến thấp", value: "price_desc" },
-                  { label: "Mới nhất", value: "newest" },
-                  { label: "Bán chạy nhất", value: "bestsellers" },
                 ]}
                 suffixIcon={<DollarOutlined />}
                 size="large"

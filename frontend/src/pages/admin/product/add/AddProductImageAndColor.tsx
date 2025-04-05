@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -15,16 +15,19 @@ import {
   Row,
   Col,
   Descriptions,
+  Tag,
+  Alert,
+  Image,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import type { UploadFile, RcFile } from "antd/es/upload/interface";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import AddProductStep from "../../../../components/product/AddProductStep";
-import { Color } from "../../../../types";
+import { Color, ProductImage, ProductVariant } from "../../../../types";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 interface Product {
@@ -37,6 +40,8 @@ interface Product {
   category: {
     category_name: string;
   };
+  images?: ProductImage[];
+  variants?: ProductVariant[];
 }
 
 interface ColorFile {
@@ -54,6 +59,7 @@ const AddProductImageAndColor: React.FC = () => {
   const [newColorName, setNewColorName] = useState("");
   const [newColorHex, setNewColorHex] = useState("#1677ff");
   const [fileList, setFileList] = useState<ColorFile[]>([]);
+  const [existingColors, setExistingColors] = useState<number[]>([]);
 
   // Trạng thái xem trước ảnh
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -68,7 +74,7 @@ const AddProductImageAndColor: React.FC = () => {
     },
   });
 
-  const { data: product } = useQuery<Product>({
+  const { data: product, isLoading: isProductLoading } = useQuery<Product>({
     queryKey: ["product", id],
     queryFn: async () => {
       const response = await axios.get(
@@ -77,6 +83,30 @@ const AddProductImageAndColor: React.FC = () => {
       return response.data;
     },
   });
+
+  useEffect(() => {
+    if (product) {
+      const colorIdsFromImages =
+        product.images?.map((img) => img.color_id).filter(Boolean) || [];
+      const colorIdsFromVariants =
+        product.variants?.map((variant) => variant.color_id) || [];
+
+      const uniqueColorIds = [
+        ...new Set([...colorIdsFromImages, ...colorIdsFromVariants]),
+      ];
+      setExistingColors(uniqueColorIds as number[]);
+
+      // Add existing colors to selected colors
+      if (uniqueColorIds.length > 0) {
+        setSelectedColors((prevSelected) => {
+          const combinedColors = [
+            ...new Set([...prevSelected, ...uniqueColorIds]),
+          ];
+          return combinedColors as number[];
+        });
+      }
+    }
+  }, [product]);
 
   const handleCancel = () => setPreviewOpen(false);
 
@@ -146,18 +176,33 @@ const AddProductImageAndColor: React.FC = () => {
     </div>
   );
 
+  // Get existing images for a specific color
+  const getExistingImagesForColor = (colorId: number) => {
+    return product?.images?.filter((image) => image.color_id === colorId) || [];
+  };
+
+  // Check if a color has existing images
+  const hasExistingImages = (colorId: number) => {
+    return getExistingImagesForColor(colorId).length > 0;
+  };
+
   const onFinish = async () => {
     try {
+      setLoading(true);
       for (let i = 0; i < fileList.length; i++) {
         const colorId = fileList[i].colorId;
-        const formData = new FormData();
 
+        // Skip if no files to upload for this color
+        if (fileList[i].files.length === 0) continue;
+
+        const formData = new FormData();
         formData.append("color_id", colorId.toString());
 
         for (let j = 0; j < fileList[i].files.length; j++) {
           const file = fileList[i].files[j];
           formData.append("image", file.originFileObj as Blob);
         }
+
         await axios.post(
           `http://localhost:8080/api/v1/products/${id}/images`,
           formData,
@@ -207,10 +252,82 @@ const AddProductImageAndColor: React.FC = () => {
           </Descriptions.Item>
         </Descriptions>
 
+        {existingColors.length > 0 && (
+          <>
+            <Alert
+              message="Sản phẩm đã có các màu sau"
+              description="Sản phẩm này đã có các màu sắc dưới đây. Bạn có thể thêm ảnh cho các màu hiện có hoặc thêm màu mới."
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+            <div style={{ marginBottom: 24 }}>
+              <Row gutter={[16, 16]}>
+                {existingColors.map((colorId) => {
+                  const color = colors?.find((c) => c.color_id === colorId);
+                  if (!color) return null;
+
+                  return (
+                    <Col key={colorId} span={8}>
+                      <Card size="small">
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            marginBottom: 12,
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 20,
+                              height: 20,
+                              backgroundColor: color.hex,
+                              borderRadius: 4,
+                              marginRight: 8,
+                              border: "1px solid #d9d9d9",
+                            }}
+                          />
+                          <Text strong>{color.color_name}</Text>
+                          {hasExistingImages(colorId) && (
+                            <Tag color="success" style={{ marginLeft: 8 }}>
+                              <CheckCircleOutlined /> Có ảnh
+                            </Tag>
+                          )}
+                        </div>
+
+                        {hasExistingImages(colorId) && (
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 8,
+                            }}
+                          >
+                            {getExistingImagesForColor(colorId).map((image) => (
+                              <Image
+                                key={image.image_id}
+                                src={image.image_url}
+                                width={60}
+                                height={60}
+                                style={{ objectFit: "cover" }}
+                                alt={`${color.color_name}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </Card>
+                    </Col>
+                  );
+                })}
+              </Row>
+            </div>
+          </>
+        )}
+
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="Chọn Màu Sắc có sẵn">
+              <Form.Item label="Chọn Màu Sắc">
                 <Select
                   mode="multiple"
                   placeholder="Chọn màu sắc"
@@ -238,6 +355,14 @@ const AddProductImageAndColor: React.FC = () => {
                           }}
                         />
                         {color.color_name}
+                        {existingColors.includes(color.color_id) && (
+                          <Tag
+                            color="processing"
+                            style={{ marginLeft: 8, fontSize: "12px" }}
+                          >
+                            Đã có
+                          </Tag>
+                        )}
                       </div>
                     </Option>
                   ))}
@@ -283,11 +408,47 @@ const AddProductImageAndColor: React.FC = () => {
 
           {fileList.map(({ colorId, files }) => {
             const color = colors?.find((c) => c.color_id === colorId);
+            const hasImages = hasExistingImages(colorId);
+
             return (
               <Form.Item
                 key={colorId}
-                label={`Ảnh cho màu ${color?.color_name}`}
+                label={
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <span>Ảnh cho màu {color?.color_name}</span>
+                    {hasImages && (
+                      <Tag color="success" style={{ marginLeft: 8 }}>
+                        <CheckCircleOutlined /> Đã có ảnh
+                      </Tag>
+                    )}
+                  </div>
+                }
               >
+                {hasImages && (
+                  <div style={{ marginBottom: 16 }}>
+                    <Text type="secondary">Ảnh hiện có:</Text>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 8,
+                        marginTop: 8,
+                      }}
+                    >
+                      {getExistingImagesForColor(colorId).map((image) => (
+                        <Image
+                          key={image.image_id}
+                          src={image.image_url}
+                          width={80}
+                          height={80}
+                          style={{ objectFit: "cover" }}
+                          alt={`${color?.color_name}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <Upload
                   listType="picture-card"
                   fileList={files}
@@ -305,7 +466,7 @@ const AddProductImageAndColor: React.FC = () => {
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Lưu Ảnh
+                {existingColors.length > 0 ? "Cập nhật ảnh" : "Lưu ảnh"}
               </Button>
               <Button onClick={() => navigate(-1)}>Hủy</Button>
             </Space>
