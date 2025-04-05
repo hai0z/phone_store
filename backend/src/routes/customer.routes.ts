@@ -1,9 +1,8 @@
 import { Router } from "express";
 import customerController from "../controllers/customer.controller";
-
 const router = Router();
 
-// Customer routes
+router.get("/home", customerController.getHomeData);
 router.get("/", customerController.getAllCustomers);
 router.get("/:id", customerController.getCustomerById);
 router.get("/:id/orders", customerController.getCustomerOrders);

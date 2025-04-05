@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Layout,
-  Carousel,
   Card,
   Row,
   Col,
@@ -12,39 +11,19 @@ import {
   theme,
   Alert,
   Badge,
-  Divider,
-  Tag,
-  Rate,
-  Avatar,
-  Statistic,
   ConfigProvider,
   FloatButton,
-  App,
   Empty,
-  Spin,
 } from "antd";
 import {
-  RightOutlined,
-  FireOutlined,
   GiftOutlined,
-  StarOutlined,
   CustomerServiceOutlined,
   SafetyCertificateOutlined,
   RocketOutlined,
   ThunderboltOutlined,
-  ShoppingOutlined,
   ArrowRightOutlined,
-  HeartOutlined,
   PercentageOutlined,
   TrophyOutlined,
-  CommentOutlined,
-  ClockCircleOutlined,
-  UserOutlined,
-  ShoppingCartOutlined,
-  LikeOutlined,
-  CheckCircleOutlined,
-  MobileOutlined,
-  LaptopOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -55,7 +34,7 @@ import { motion } from "framer-motion";
 import BannerSlider from "../../components/customer/BannerSlider";
 
 const { Content } = Layout;
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { useToken } = theme;
 
 interface Product {

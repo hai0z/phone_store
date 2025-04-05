@@ -126,13 +126,12 @@ export class OrderService extends BaseService {
 
   async createPaymentVNPay(orderId: number, amount: number) {
     const vnpay = new VNPay({
-      tmnCode: "J7PHPQD0",
-      secureSecret: "TS9R8HHIC95IKFGQFTJKHT3L6NW9EODR",
-      vnpayHost: "https://sandbox.vnpayment.vn",
-      testMode: true,
+      tmnCode: "OMOE5KG2",
+      secureSecret: "5YWE2JAUAWURTDFT5GGQDA7WJRXMVKV0",
+      vnpayHost: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
       hashAlgorithm: HashAlgorithm.SHA512,
+      testMode: true,
       enableLog: true,
-      loggerFn: ignoreLogger,
     });
     const oneHourLater = new Date();
     oneHourLater.setHours(oneHourLater.getHours() + 1);

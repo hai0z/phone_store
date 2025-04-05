@@ -280,7 +280,7 @@ const EditBanner: React.FC = () => {
             title: values.imgTitle,
             description: values.imgDescription,
             link_url: values.imgLink,
-            position: values.imgPosition,
+            position: Number(values.imgPosition),
           },
         });
       } else {

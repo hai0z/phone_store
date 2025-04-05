@@ -374,39 +374,7 @@ const Checkout: React.FC = () => {
         return isNotExpired && !hasNotStarted && hasUsesLeft;
       });
 
-      // Sort vouchers: first by applicability, then by benefit
-      const sortedVouchers = activeVouchers.sort((a: any, b: any) => {
-        // First priority: can the voucher be applied to the current order?
-        const aApplicable =
-          !a.min_order_value || a.min_order_value <= totalPrice;
-        const bApplicable =
-          !b.min_order_value || b.min_order_value <= totalPrice;
-
-        if (aApplicable && !bApplicable) return -1;
-        if (!aApplicable && bApplicable) return 1;
-
-        // Second priority: calculate potential discount (approximate)
-        const aValue =
-          a.discount_type === "PERCENTAGE"
-            ? Math.min(
-                totalPrice * (a.discount_value / 100),
-                a.max_discount_value || Infinity
-              )
-            : a.discount_value;
-
-        const bValue =
-          b.discount_type === "PERCENTAGE"
-            ? Math.min(
-                totalPrice * (b.discount_value / 100),
-                b.max_discount_value || Infinity
-              )
-            : b.discount_value;
-
-        // Higher discount first
-        return bValue - aValue;
-      });
-
-      setAvailableVouchers(sortedVouchers);
+      setAvailableVouchers(activeVouchers);
     } catch (error) {
       console.error("Error fetching vouchers:", error);
     } finally {

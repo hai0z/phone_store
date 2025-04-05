@@ -207,6 +207,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = () => {
     setUser(null);
     setToken(null);
+    setAdmin(null);
+
     localStorage.removeItem("token");
   };
 
@@ -223,5 +225,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     admin,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };

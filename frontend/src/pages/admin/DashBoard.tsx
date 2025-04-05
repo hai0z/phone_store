@@ -34,6 +34,7 @@ import axios from "axios";
 import { theme } from "antd";
 import RevenueAnalytics from "./stats/RevenueAnalytics";
 import dayjs from "dayjs";
+import { Link } from "react-router-dom";
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
@@ -74,22 +75,28 @@ interface DashboardData {
 
 const DashBoard: React.FC = () => {
   const { token } = useToken();
-
+  const jwtToken = localStorage.getItem("token");
   const {
     data: dashboardData,
-    isLoading,
+    isFetching,
     error,
+    refetch,
   } = useQuery<DashboardData>({
     queryKey: ["dashboardData"],
     queryFn: async () => {
       const response = await axios.get(
-        "http://localhost:8080/api/v1/admin/dashboard"
+        "http://localhost:8080/api/v1/admin/dashboard",
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        }
       );
       return response.data;
     },
   });
 
-  if (isLoading) {
+  if (isFetching) {
     return (
       <div
         style={{
@@ -335,6 +342,9 @@ const DashBoard: React.FC = () => {
         </Space>
         <Tooltip title="Làm mới dữ liệu">
           <Button
+            onClick={() => {
+              refetch();
+            }}
             type="text"
             icon={<ReloadOutlined />}
             size="large"
@@ -598,9 +608,11 @@ const DashBoard: React.FC = () => {
             }
             extra={
               <Tooltip title="Quản lý kho">
-                <Button type="link" icon={<RightOutlined />}>
-                  Quản lý kho
-                </Button>
+                <Link to="/admin/inventory">
+                  <Button type="link" icon={<RightOutlined />}>
+                    Quản lý kho
+                  </Button>
+                </Link>
               </Tooltip>
             }
             style={{
@@ -645,9 +657,6 @@ const DashBoard: React.FC = () => {
                       </Space>
                     }
                   />
-                  <Button type="text" size="small">
-                    Chi tiết
-                  </Button>
                 </List.Item>
               )}
               pagination={{

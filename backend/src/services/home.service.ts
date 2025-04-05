@@ -130,7 +130,7 @@ export class HomeService extends BaseService {
       // Get low stock products (less than 10 items)
       this.prisma.productVariants.findMany({
         where: {
-          stock: { lt: 200 },
+          stock: { lt: 20 },
         },
         include: {
           product: {

@@ -25,6 +25,8 @@ import BannerList from "../pages/admin/banner/Index";
 import AddBanner from "../pages/admin/banner/AddBanner";
 import EditBanner from "../pages/admin/banner/EditBanner";
 import AdminLogin from "../pages/admin/login/Login";
+import InventoryManagement from "../pages/admin/inventory/Index";
+import AdminProfile from "../pages/admin/profile/Index";
 import { useAuth } from "../contexts/AuthContext";
 
 const AdminRouter = () => {
@@ -44,6 +46,7 @@ const AdminRouter = () => {
         element={isAdmin ? <AdminLayout /> : <Navigate to="/admin/login" />}
       >
         <Route index element={<Dashboard />} />
+        <Route path="/admin/profile" element={<AdminProfile />} />
         <Route>
           <Route path="/admin/products" element={<ProductList />} />
           <Route path="/admin/products/add" element={<AddProduct />} />
@@ -56,6 +59,9 @@ const AdminRouter = () => {
             element={<AddProductVariants />}
           />
           <Route path="/admin/products/edit/:id" element={<ProductEdit />} />
+        </Route>
+        <Route>
+          <Route path="/admin/inventory" element={<InventoryManagement />} />
         </Route>
         <Route>
           <Route path="/admin/brands" element={<BrandList />} />

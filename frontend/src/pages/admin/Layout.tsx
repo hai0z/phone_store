@@ -17,6 +17,7 @@ import {
   FacebookOutlined,
   InstagramOutlined,
   PictureOutlined,
+  DatabaseOutlined,
 } from "@ant-design/icons";
 import {
   Layout,
@@ -32,6 +33,7 @@ import {
 } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
 import Title from "antd/es/typography/Title";
+import { useAuth } from "../../contexts/AuthContext";
 
 const { Header, Sider, Content, Footer } = Layout;
 const { Text, Link } = Typography;
@@ -39,6 +41,7 @@ const { Text, Link } = Typography;
 const AdminLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const { admin, logout } = useAuth();
 
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -55,8 +58,13 @@ const AdminLayout: React.FC = () => {
       key: "products",
       icon: <MobileOutlined />,
       label: "Sản phẩm",
-
       onClick: () => navigate("/admin/products"),
+    },
+    {
+      key: "inventory",
+      icon: <DatabaseOutlined />,
+      label: "Kho hàng",
+      onClick: () => navigate("/admin/inventory"),
     },
     {
       key: "categories",
@@ -106,14 +114,29 @@ const AdminLayout: React.FC = () => {
     {
       key: "profile",
       icon: <UserOutlined />,
-      label: "Profile",
+      label: "Hồ sơ",
+      onClick: () => navigate("/admin/profile"),
     },
     {
       key: "logout",
       icon: <LogoutOutlined />,
-      label: "Logout",
+      label: "Đăng xuất",
+      onClick: () => {
+        logout();
+        navigate("/admin/login");
+      },
     },
   ];
+
+  // Generate avatar text from full name
+  const getAvatarText = (name?: string) => {
+    if (!name) return "A";
+    const nameParts = name?.split(" ");
+    if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
+    return (
+      nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)
+    ).toUpperCase();
+  };
 
   return (
     <Layout
@@ -210,9 +233,24 @@ const AdminLayout: React.FC = () => {
           />
           <div style={{ marginRight: "24px" }}>
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-              <div style={{ cursor: "pointer" }}>
-                <Avatar icon={<UserOutlined />} />
-                <span style={{ marginLeft: "8px" }}>Admin</span>
+              <div
+                style={{
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Avatar
+                  style={{
+                    backgroundColor: "#1890ff",
+                    color: "#fff",
+                  }}
+                >
+                  {getAvatarText(admin?.full_name)}
+                </Avatar>
+                <span style={{ marginLeft: "8px" }}>
+                  {admin?.full_name || "Admin"}
+                </span>
               </div>
             </Dropdown>
           </div>
